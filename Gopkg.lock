@@ -196,7 +196,15 @@
   version = "v3.3.0"
 
 [[projects]]
-  digest = "1:d933eca5fdbfaedb996f8c955107b6669c6ba72d5a75be17cab42833b7c10db8"
+  digest = "1:75ab90ae3f5d876167e60f493beadfe66f0ed861a710f283fb06c86437a09538"
+  name = "github.com/jonboulle/clockwork"
+  packages = ["."]
+  pruneopts = "UT"
+  revision = "2eee05ed794112d45db504eb05aa693efd2b8b09"
+  version = "v0.1.0"
+
+[[projects]]
+  digest = "1:e1e3579edcd8120ed502eb80c3ed406ee2087570024db819470c38435693ba5c"
   name = "github.com/katzenpost/authority"
   packages = [
     "internal/s11n",
@@ -208,11 +216,11 @@
     "voting/server/config",
   ]
   pruneopts = "UT"
-  revision = "37313cf0f4143b5621f8dd53b5d8b397870b7c29"
-  version = "v0.0.7"
+  revision = "846328a78404fe80b6037463a21d399ff192e60c"
+  version = "v0.0.8"
 
 [[projects]]
-  digest = "1:b198e03d62ca628d4ab31a88e737faa11e4699e2b228951f55982f2383459d55"
+  digest = "1:3e4258224fc1cf961b7be237a9ccd36eae3a85a2a9254cebc41a5b643e934251"
   name = "github.com/katzenpost/core"
   packages = [
     "constants",
@@ -237,8 +245,8 @@
     "worker",
   ]
   pruneopts = "UT"
-  revision = "0213ae4e0d0ee7a53f238e39535430bfeb49cfc2"
-  version = "v0.0.6"
+  revision = "b5543b8fc9ef912272fa480ae3c8d4c657e80514"
+  version = "v0.0.7"
 
 [[projects]]
   digest = "1:1c3640d956aeb260c55a6de3a447d7d15ccc767c92cc14eca2a431dac6e17cdd"
@@ -261,15 +269,15 @@
   version = "v0.0.5"
 
 [[projects]]
-  digest = "1:c5480a0073c133f1d3b3becde7242b26333a455e6d16205eba4e1d2c90398898"
+  digest = "1:b3f6b1bdb2bf60da48035d5bf8073cc7d01a2d5a495603196905da4d37de012f"
   name = "github.com/katzenpost/minclient"
   packages = [
     ".",
     "block",
   ]
   pruneopts = "UT"
-  revision = "fe261fae58ad548ba9ffa559a7138be5d3a2d979"
-  version = "v0.0.4"
+  revision = "61dd7b17c6a191c16d01cfa268e3e3cacde219f3"
+  version = "v0.0.5"
 
 [[projects]]
   branch = "master"
@@ -280,7 +288,7 @@
   revision = "08e83772a9119dc0b35028bc6d8412dc22b0a9ee"
 
 [[projects]]
-  digest = "1:5c5fd30df6181f3e02478337f281022534e390bd77324851dbee24b17544fe11"
+  digest = "1:10dcc5f6ff99fffa61e6222311dba5da61fe01c054da2ac74fe4eb0c7f03b67f"
   name = "github.com/katzenpost/server"
   packages = [
     ".",
@@ -310,8 +318,8 @@
     "userdb/externuserdb",
   ]
   pruneopts = "UT"
-  revision = "870960324fc553f54da4645edc081dc35d269a29"
-  version = "v0.0.6"
+  revision = "49cf51333cc9afee70c0acbd57d83408e24134a9"
+  version = "v0.0.7"
 
 [[projects]]
   digest = "1:42eb1f52b84a06820cedc9baec2e710bfbda3ee6dac6cdb97f8b9a5066134ec6"
@@ -355,7 +363,7 @@
 
 [[projects]]
   branch = "master"
-  digest = "1:3c22669112be20403521d3c9472df5b886b44df40a198285ec0589ef3c703944"
+  digest = "1:e63dfc8ef9940dff2395db61c2cdc01f7ef9b41cd77f9e81c60b644800878907"
   name = "golang.org/x/crypto"
   packages = [
     "blake2b",
@@ -370,7 +378,7 @@
     "sha3",
   ]
   pruneopts = "UT"
-  revision = "505ab145d0a99da450461ae2c1a9f6cd10d1f447"
+  revision = "ff983b9c42bc9fbf91556e191cc8efb585c16908"
 
 [[projects]]
   branch = "master"
@@ -388,18 +396,18 @@
     "trace",
   ]
   pruneopts = "UT"
-  revision = "e147a9138326bc0e9d4e179541ffd8af41cff8a9"
+  revision = "927f97764cc334a6575f4b7a1584a147864d5723"
 
 [[projects]]
   branch = "master"
-  digest = "1:9bd2a1332ddcee55c2dad82b983716d41a32635dafab848a12de0e73f29d4c2c"
+  digest = "1:6c854c3734cdaba6b8d4e6795e234213418a6e963260065adadee24665ca56a3"
   name = "golang.org/x/sys"
   packages = [
     "cpu",
     "unix",
   ]
   pruneopts = "UT"
-  revision = "074acd46bca67915925527c07849494d115e7c43"
+  revision = "82a175fd1598e8a172e58ebdf5ed262bb29129e5"
 
 [[projects]]
   digest = "1:4c3c045deaf0ae4d4b14f3abd22bbd322693d1bee1cc59b1e1667fdd3b683e0e"
@@ -442,7 +450,7 @@
   name = "google.golang.org/genproto"
   packages = ["googleapis/rpc/status"]
   pruneopts = "UT"
-  revision = "67d6565462c5a0d99b88193d59fefa10ca7e3010"
+  revision = "bd9b4fb69e2ffd37621a6caa54dcbead29b546f2"
 
 [[projects]]
   digest = "1:03af1505694005143ff6dc5d0e2802c8200ddb618b1d3f7201482f53798b99b4"
