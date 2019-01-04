@@ -31,7 +31,6 @@ import (
 	"runtime/pprof"
 	"sync"
 	"syscall"
-	"time"
 
 	"github.com/hpcloud/tail"
 	vServer "github.com/katzenpost/authority/voting/server"
@@ -41,7 +40,6 @@ import (
 	"github.com/katzenpost/core/crypto/ecdh"
 	"github.com/katzenpost/core/crypto/eddsa"
 	"github.com/katzenpost/core/crypto/rand"
-	"github.com/katzenpost/core/epochtime"
 	"github.com/katzenpost/core/thwack"
 	"github.com/katzenpost/mailproxy"
 	pConfig "github.com/katzenpost/mailproxy/config"
@@ -53,9 +51,6 @@ import (
 const (
 	logFile       = "kimchi.log"
 	basePort      = 30000
-	nrNodes       = 6
-	nrProviders   = 2
-	nrAuthorities = 10
 )
 
 var tailConfig = tail.Config{
@@ -74,6 +69,11 @@ type kimchi struct {
 	authConfig    *aConfig.Config
 	votingAuthConfigs []*vConfig.Config
 	authIdentity  *eddsa.PrivateKey
+	voting bool
+
+	nVoting   int
+	nProvider int
+	nMix      int
 
 	nodeConfigs []*sConfig.Config
 	lastPort    uint16
@@ -91,31 +91,125 @@ type server interface {
 	Wait()
 }
 
-func newKimchi(basePort int) *kimchi {
-	//[]*sConfig.Config
+func NewKimchi(basePort int, baseDir string, voting bool, nVoting, nProvider, nMix int) *kimchi {
 	k := &kimchi{
 		lastPort:    uint16(basePort + 1),
 		recipients:  make(map[string]*ecdh.PublicKey),
 		nodeConfigs: make([]*sConfig.Config, 0),
+		voting:      voting,
+		nVoting:     nVoting,
+		nProvider:   nProvider,
+		nMix:        nMix,
+	}
+	// Create the base directory and bring logging online.
+	var err error
+	if baseDir == "" {
+		k.baseDir, err = ioutil.TempDir("", "kimchi")
+		if err != nil {
+			fmt.Fprintf(os.Stderr, "Failed to create base directory: %v\n", err)
+			os.Exit(-1)
+		}
+	} else {
+		k.baseDir = baseDir
+	}
+	if err = k.initLogging(); err != nil {
+		fmt.Fprintf(os.Stderr, "Failed to initialize logging: %v\n", err)
+		os.Exit(-1)
 	}
 	return k
 }
 
-func (s *kimchi) initLogging() error {
-	logFilePath := filepath.Join(s.baseDir, logFile)
+func (k *kimchi) run() {
+	// Launch all the nodes.
+	for _, v := range k.nodeConfigs {
+		v.FixupAndValidate()
+		svr, err := nServer.New(v)
+		if err != nil {
+			log.Fatalf("Failed to launch node: %v", err)
+		}
+
+		k.servers = append(k.servers, svr)
+		go k.logTailer(v.Server.Identifier, filepath.Join(v.Server.DataDir, v.Logging.File))
+	}
+}
+
+func (k *kimchi) initConfig() error {
+	// Generate the authority configs
+	var err error
+	if k.voting {
+		err = k.genVotingAuthoritiesCfg()
+		if err != nil {
+			log.Fatalf("getVotingAuthoritiesCfg failed: %s", err)
+		}
+	} else {
+		if err = k.genAuthConfig(); err != nil {
+			log.Fatalf("Failed to generate authority config: %v", err)
+		}
+	}
+
+	// Generate the provider configs.
+	for i := 0; i < k.nProvider; i++ {
+		if err = k.genNodeConfig(true, k.voting); err != nil {
+			log.Fatalf("Failed to generate provider config: %v", err)
+		}
+	}
+
+	// Generate the node configs.
+	for i := 0; i < k.nMix; i++ {
+		if err = k.genNodeConfig(false, k.voting); err != nil {
+			log.Fatalf("Failed to generate node config: %v", err)
+		}
+	}
+
+	// Generate the node lists.
+	if k.voting {
+		providerWhitelist, mixWhitelist, err := k.generateVotingWhitelist()
+		if err != nil {
+			panic(err)
+		}
+		for _, aCfg := range k.votingAuthConfigs {
+			aCfg.Mixes = mixWhitelist
+			aCfg.Providers = providerWhitelist
+		}
+	} else {
+		if providers, mixes, err := k.generateWhitelist(); err == nil {
+			k.authConfig.Mixes = mixes
+			k.authConfig.Providers = providers
+		} else {
+			log.Fatalf("Failed to generateWhitelist with %s", err)
+		}
+	}
+	return err
+}
+
+func (k *kimchi) runAuthority() {
+	var err error
+	if k.voting {
+		err = k.runVotingAuthorities()
+	} else {
+		err = k.runNonvoting()
+	}
+	if err != nil {
+		panic(err)
+	}
+}
+
+
+func (k *kimchi) initLogging() error {
+	logFilePath := filepath.Join(k.baseDir, logFile)
 	f, err := os.OpenFile(logFilePath, os.O_CREATE|os.O_APPEND|os.O_WRONLY, 0600)
 	if err != nil {
 		return err
 	}
 
 	// Log to both stdout *and* the log file.
-	s.logWriter = io.MultiWriter(f, os.Stdout)
-	log.SetOutput(s.logWriter)
+	k.logWriter = io.MultiWriter(f, os.Stdout)
+	log.SetOutput(k.logWriter)
 
 	return nil
 }
 
-func (s *kimchi) genVotingAuthoritiesCfg(numAuthorities int) error {
+func (k *kimchi) genVotingAuthoritiesCfg() error {
 	parameters := &vConfig.Parameters{
 		MixLambda:       1,
 		MixMaxDelay:     10000,
@@ -126,7 +220,7 @@ func (s *kimchi) genVotingAuthoritiesCfg(numAuthorities int) error {
 
 	// initial generation of key material for each authority
 	peersMap := make(map[[eddsa.PublicKeySize]byte]*vConfig.AuthorityPeer)
-	for i := 0; i < numAuthorities; i++ {
+	for i := 0; i < k.nVoting; i++ {
 		cfg := new(vConfig.Config)
 		cfg.Logging = &vConfig.Logging{
 			Disable: false,
@@ -136,10 +230,10 @@ func (s *kimchi) genVotingAuthoritiesCfg(numAuthorities int) error {
 		cfg.Parameters = parameters
 		cfg.Authority = &vConfig.Authority{
 			Identifier: fmt.Sprintf("authority-%v.example.org", i),
-			Addresses:  []string{fmt.Sprintf("127.0.0.1:%d", s.lastPort)},
-			DataDir:    filepath.Join(s.baseDir, fmt.Sprintf("authority%d", i)),
+			Addresses:  []string{fmt.Sprintf("127.0.0.1:%d", k.lastPort)},
+			DataDir:    filepath.Join(k.baseDir, fmt.Sprintf("authority%d", i)),
 		}
-		s.lastPort += 1
+		k.lastPort += 1
 		os.Mkdir(cfg.Authority.DataDir, 0700)
 		idKey, err := eddsa.NewKeypair(rand.Reader)
 		if err != nil {
@@ -166,7 +260,7 @@ func (s *kimchi) genVotingAuthoritiesCfg(numAuthorities int) error {
 	}
 
 	// tell each authority about it's peers
-	for i := 0; i < numAuthorities; i++ {
+	for i := 0; i < k.nVoting; i++ {
 		peers := []*vConfig.AuthorityPeer{}
 		for id, peer := range peersMap {
 			if !bytes.Equal(id[:], configs[i].Debug.IdentityKey.PublicKey().Bytes()) {
@@ -175,24 +269,24 @@ func (s *kimchi) genVotingAuthoritiesCfg(numAuthorities int) error {
 		}
 		configs[i].Authorities = peers
 	}
-	s.votingAuthConfigs = configs
+	k.votingAuthConfigs = configs
 	return nil
 }
 
-func (s *kimchi) genNodeConfig(isProvider bool, isVoting bool) error {
+func (k *kimchi) genNodeConfig(isProvider bool, isVoting bool) error {
 	const serverLogFile = "katzenpost.log"
 
-	n := fmt.Sprintf("node-%d", s.nodeIdx)
+	n := fmt.Sprintf("node-%d", k.nodeIdx)
 	if isProvider {
-		n = fmt.Sprintf("provider-%d", s.providerIdx)
+		n = fmt.Sprintf("provider-%d", k.providerIdx)
 	}
 	cfg := new(sConfig.Config)
 
 	// Server section.
 	cfg.Server = new(sConfig.Server)
 	cfg.Server.Identifier = fmt.Sprintf("%s.eXaMpLe.org", n)
-	cfg.Server.Addresses = []string{fmt.Sprintf("127.0.0.1:%d", s.lastPort)}
-	cfg.Server.DataDir = filepath.Join(s.baseDir, n)
+	cfg.Server.Addresses = []string{fmt.Sprintf("127.0.0.1:%d", k.lastPort)}
+	cfg.Server.DataDir = filepath.Join(k.baseDir, n)
 	cfg.Server.IsProvider = isProvider
 
 	// Logging section.
@@ -211,7 +305,7 @@ func (s *kimchi) genNodeConfig(isProvider bool, isVoting bool) error {
 
 	if isVoting {
 		peers := []*sConfig.Peer{}
-		for _, peer := range s.votingAuthConfigs {
+		for _, peer := range k.votingAuthConfigs {
 			idKey, err := peer.Debug.IdentityKey.PublicKey().MarshalText()
 			if err != nil {
 				return err
@@ -239,9 +333,9 @@ func (s *kimchi) genNodeConfig(isProvider bool, isVoting bool) error {
 		cfg.PKI = new(sConfig.PKI)
 		cfg.PKI.Nonvoting = new(sConfig.Nonvoting)
 		cfg.PKI.Nonvoting.Address = fmt.Sprintf("127.0.0.1:%d", basePort)
-		if s.authIdentity == nil {
+		if k.authIdentity == nil {
 		}
-		idKey, err := s.authIdentity.PublicKey().MarshalText()
+		idKey, err := k.authIdentity.PublicKey().MarshalText()
 		if err != nil {
 			return err
 		}
@@ -253,7 +347,7 @@ func (s *kimchi) genNodeConfig(isProvider bool, isVoting bool) error {
 		cfg.Management = new(sConfig.Management)
 		cfg.Management.Enable = true
 
-		s.providerIdx++
+		k.providerIdx++
 
 		cfg.Provider = new(sConfig.Provider)
 
@@ -281,10 +375,10 @@ func (s *kimchi) genNodeConfig(isProvider bool, isVoting bool) error {
 			}
 		*/
 	} else {
-		s.nodeIdx++
+		k.nodeIdx++
 	}
-	s.nodeConfigs = append(s.nodeConfigs, cfg)
-	s.lastPort++
+	k.nodeConfigs = append(k.nodeConfigs, cfg)
+	k.lastPort++
 	err = cfg.FixupAndValidate()
 	if err != nil {
 		return errors.New("genNodeConfig failure on fixupandvalidate")
@@ -292,7 +386,7 @@ func (s *kimchi) genNodeConfig(isProvider bool, isVoting bool) error {
 	return nil
 }
 
-func (s *kimchi) genAuthConfig() error {
+func (k *kimchi) genAuthConfig() error {
 	const authLogFile = "authority.log"
 
 	cfg := new(aConfig.Config)
@@ -300,7 +394,7 @@ func (s *kimchi) genAuthConfig() error {
 	// Authority section.
 	cfg.Authority = new(aConfig.Authority)
 	cfg.Authority.Addresses = []string{fmt.Sprintf("127.0.0.1:%d", basePort)}
-	cfg.Authority.DataDir = filepath.Join(s.baseDir, "authority")
+	cfg.Authority.DataDir = filepath.Join(k.baseDir, "authority")
 
 	// Logging section.
 	cfg.Logging = new(aConfig.Logging)
@@ -312,7 +406,7 @@ func (s *kimchi) genAuthConfig() error {
 
 	// Generate Keys
 	idKey, err := eddsa.NewKeypair(rand.Reader)
-	s.authIdentity = idKey
+	k.authIdentity = idKey
 	if err != nil {
 		return err
 	}
@@ -324,14 +418,14 @@ func (s *kimchi) genAuthConfig() error {
 	if err := cfg.FixupAndValidate(); err != nil {
 		return err
 	}
-	s.authConfig = cfg
+	k.authConfig = cfg
 	return nil
 }
 
-func (s *kimchi) generateWhitelist() ([]*aConfig.Node, []*aConfig.Node, error) {
+func (k *kimchi) generateWhitelist() ([]*aConfig.Node, []*aConfig.Node, error) {
 	mixes := []*aConfig.Node{}
 	providers := []*aConfig.Node{}
-	for _, nodeCfg := range s.nodeConfigs {
+	for _, nodeCfg := range k.nodeConfigs {
 		if nodeCfg.Server.IsProvider {
 			provider := &aConfig.Node{
 				Identifier:  nodeCfg.Server.Identifier,
@@ -351,10 +445,10 @@ func (s *kimchi) generateWhitelist() ([]*aConfig.Node, []*aConfig.Node, error) {
 }
 
 // generateWhitelist returns providers, mixes, error
-func (s *kimchi) generateVotingWhitelist() ([]*vConfig.Node, []*vConfig.Node, error) {
+func (k *kimchi) generateVotingWhitelist() ([]*vConfig.Node, []*vConfig.Node, error) {
 	mixes := []*vConfig.Node{}
 	providers := []*vConfig.Node{}
-	for _, nodeCfg := range s.nodeConfigs {
+	for _, nodeCfg := range k.nodeConfigs {
 		if nodeCfg.Server.IsProvider {
 			provider := &vConfig.Node{
 				Identifier:  nodeCfg.Server.Identifier,
@@ -372,32 +466,32 @@ func (s *kimchi) generateVotingWhitelist() ([]*vConfig.Node, []*vConfig.Node, er
 	return providers, mixes, nil
 }
 
-func (s *kimchi) runNonvoting() error {
-	a := s.authConfig
+func (k *kimchi) runNonvoting() error {
+	a := k.authConfig
 	a.FixupAndValidate()
 	server, err := aServer.New(a)
 	if err != nil {
 		return err
 	}
-	go s.logTailer("nonvoting", filepath.Join(a.Authority.DataDir, a.Logging.File))
-	s.servers = append(s.servers, server)
+	go k.logTailer("nonvoting", filepath.Join(a.Authority.DataDir, a.Logging.File))
+	k.servers = append(k.servers, server)
 	return nil
 }
 
-func (s *kimchi) runVotingAuthorities() error {
-	for _, vCfg := range s.votingAuthConfigs {
+func (k *kimchi) runVotingAuthorities() error {
+	for _, vCfg := range k.votingAuthConfigs {
 		vCfg.FixupAndValidate()
 		server, err := vServer.New(vCfg)
 		if err != nil {
 			return err
 		}
-		go s.logTailer(vCfg.Authority.Identifier, filepath.Join(vCfg.Authority.DataDir, vCfg.Logging.File))
-		s.servers = append(s.servers, server)
+		go k.logTailer(vCfg.Authority.Identifier, filepath.Join(vCfg.Authority.DataDir, vCfg.Logging.File))
+		k.servers = append(k.servers, server)
 	}
 	return nil
 }
 
-func (s *kimchi) newMailProxy(user, provider string, privateKey *ecdh.PrivateKey, isVoting bool) (*mailproxy.Proxy, error) {
+func (k *kimchi) newMailProxy(user, provider string, privateKey *ecdh.PrivateKey, isVoting bool) (*mailproxy.Proxy, error) {
 	const (
 		proxyLogFile = "katzenpost.log"
 		authID       = "testAuth"
@@ -409,11 +503,11 @@ func (s *kimchi) newMailProxy(user, provider string, privateKey *ecdh.PrivateKey
 
 	// Proxy section.
 	cfg.Proxy = new(pConfig.Proxy)
-	cfg.Proxy.POP3Address = fmt.Sprintf("127.0.0.1:%d", s.lastPort)
-	s.lastPort++
-	cfg.Proxy.SMTPAddress = fmt.Sprintf("127.0.0.1:%d", s.lastPort)
-	s.lastPort++
-	cfg.Proxy.DataDir = filepath.Join(s.baseDir, dispName)
+	cfg.Proxy.POP3Address = fmt.Sprintf("127.0.0.1:%d", k.lastPort)
+	k.lastPort++
+	cfg.Proxy.SMTPAddress = fmt.Sprintf("127.0.0.1:%d", k.lastPort)
+	k.lastPort++
+	cfg.Proxy.DataDir = filepath.Join(k.baseDir, dispName)
 
 	// Logging section.
 	cfg.Logging = new(pConfig.Logging)
@@ -444,7 +538,7 @@ func (s *kimchi) newMailProxy(user, provider string, privateKey *ecdh.PrivateKey
 	*/
 
 	// Recipients section.
-	cfg.Recipients = s.recipients
+	cfg.Recipients = k.recipients
 
 	if err := cfg.FixupAndValidate(); err != nil {
 		return nil, err
@@ -471,12 +565,12 @@ func (s *kimchi) newMailProxy(user, provider string, privateKey *ecdh.PrivateKey
 		}
 	}()
 
-	go s.logTailer(dispName, filepath.Join(cfg.Proxy.DataDir, proxyLogFile))
+	go k.logTailer(dispName, filepath.Join(cfg.Proxy.DataDir, proxyLogFile))
 
 	return p, nil
 }
 
-func (s *kimchi) thwackUser(provider *sConfig.Config, user string, pubKey *ecdh.PublicKey) error {
+func (k *kimchi) thwackUser(provider *sConfig.Config, user string, pubKey *ecdh.PublicKey) error {
 	log.Printf("Attempting to add user: %v@%v", user, provider.Server.Identifier)
 
 	sockFn := filepath.Join(provider.Server.DataDir, "management_sock")
@@ -506,20 +600,20 @@ func (s *kimchi) thwackUser(provider *sConfig.Config, user string, pubKey *ecdh.
 	return nil
 }
 
-func (s *kimchi) logTailer(prefix, path string) {
-	s.Add(1)
-	defer s.Done()
+func (k *kimchi) logTailer(prefix, path string) {
+	k.Add(1)
+	defer k.Done()
 
-	l := log.New(s.logWriter, prefix+" ", 0)
+	l := log.New(k.logWriter, prefix+" ", 0)
 	t, err := tail.TailFile(path, tailConfig)
 	defer t.Cleanup()
 	if err != nil {
 		log.Fatalf("Failed to tail file '%v': %v", path, err)
 	}
 
-	s.Lock()
-	s.tails = append(s.tails, t)
-	s.Unlock()
+	k.Lock()
+	k.tails = append(k.tails, t)
+	k.Unlock()
 
 	for line := range t.Lines {
 		l.Print(line.Text)
@@ -528,9 +622,10 @@ func (s *kimchi) logTailer(prefix, path string) {
 
 func main() {
 
-	var err error
-	var voting = flag.Bool("voting", false, "if set then using voting authorities")
-	var votingNum = flag.Int("votingNum", 3, "the number of voting authorities")
+	var voting = flag.Bool("voting", false, "use voting authorities")
+	var nVoting = flag.Int("nv", 3, "the number of voting authorities")
+	var nProvider = flag.Int("np", 2, "the number of providers")
+	var nMix = flag.Int("nm", 6, "the number of mixes")
 	var cpuprofile = flag.String("cpuprofile", "", "write cpu profile to file")
 	var memprofile = flag.String("memprofile", "", "write memory profile to this file")
 
@@ -545,111 +640,30 @@ func main() {
 		defer pprof.StopCPUProfile()
 	}
 
-	s := newKimchi(basePort)
+	k := NewKimchi(basePort, "",  *voting, *nVoting, *nProvider, *nMix)
 
-	// TODO: Someone that cares enough can use a config file for this, but
-	// this is ultimately just for testing.
-
-	// Create the base directory and bring logging online.
-	s.baseDir, err = ioutil.TempDir("", "kimchi")
-	if err != nil {
-		fmt.Fprintf(os.Stderr, "Failed to create base directory: %v\n", err)
-		os.Exit(-1)
-	}
-	if err = s.initLogging(); err != nil {
-		fmt.Fprintf(os.Stderr, "Failed to initialize logging: %v\n", err)
-		os.Exit(-1)
-	}
-	log.Printf("Base Directory: %v", s.baseDir)
-
-	now, elapsed, till := epochtime.Now()
-	log.Printf("Epoch: %v (Elapsed: %v, Till: %v)", now, elapsed, till)
-	if till < epochtime.Period-(3600*time.Second) {
-		log.Printf("WARNING: Descriptor publication for the next epoch will FAIL.")
-	}
-
-	// Generate the authority configs
-	if *voting {
-		err := s.genVotingAuthoritiesCfg(*votingNum)
-		if err != nil {
-			log.Fatalf("getVotingAuthoritiesCfg failed: %s", err)
-		}
-	} else {
-		if err = s.genAuthConfig(); err != nil {
-			log.Fatalf("Failed to generate authority config: %v", err)
-		}
-	}
-
-	// Generate the provider configs.
-	for i := 0; i < nrProviders; i++ {
-		if err = s.genNodeConfig(true, *voting); err != nil {
-			log.Fatalf("Failed to generate provider config: %v", err)
-		}
-	}
-
-	// Generate the node configs.
-	for i := 0; i < nrNodes; i++ {
-		if err = s.genNodeConfig(false, *voting); err != nil {
-			log.Fatalf("Failed to generate node config: %v", err)
-		}
-	}
-
-	// Generate the node lists.
-	if *voting {
-		providerWhitelist, mixWhitelist, err := s.generateVotingWhitelist()
-		if err != nil {
-			panic(err)
-		}
-		for _, aCfg := range s.votingAuthConfigs {
-			aCfg.Mixes = mixWhitelist
-			aCfg.Providers = providerWhitelist
-		}
-		err = s.runVotingAuthorities()
-		if err != nil {
-			panic(err)
-		}
-	} else {
-		if providers, mixes, err := s.generateWhitelist(); err == nil {
-			s.authConfig.Mixes = mixes
-			s.authConfig.Providers = providers
-		} else {
-			log.Fatalf("Failed to generateWhitelist with %s", err)
-		}
-		err = s.runNonvoting()
-		if err != nil {
-			panic(err)
-		}
-	}
-
-	// Launch all the nodes.
-	for _, v := range s.nodeConfigs {
-		v.FixupAndValidate()
-		svr, err := nServer.New(v)
-		if err != nil {
-			log.Fatalf("Failed to launch node: %v", err)
-		}
-
-		s.servers = append(s.servers, svr)
-		go s.logTailer(v.Server.Identifier, filepath.Join(v.Server.DataDir, v.Logging.File))
-	}
+	k.run()
 
 	// Generate the private keys used by the clients in advance so they
 	// can know each other.
 	alicePrivateKey, _ := ecdh.NewKeypair(rand.Reader)
 	bobPrivateKey, _ := ecdh.NewKeypair(rand.Reader)
-	s.recipients["alice@provider-0.example.org"] = alicePrivateKey.PublicKey()
-	s.recipients["bob@provider-1.example.org"] = bobPrivateKey.PublicKey()
+	k.recipients["alice@provider-0.example.org"] = alicePrivateKey.PublicKey()
+	k.recipients["bob@provider-1.example.org"] = bobPrivateKey.PublicKey()
 
+	/*
+	var err error
 	// Initialize Alice's mailproxy.
 	// XXX aliceProvider := s.authProviders[0].Identifier
-	if err = s.thwackUser(s.nodeConfigs[0], "aLiCe", alicePrivateKey.PublicKey()); err != nil {
+	if err = k.thwackUser(k.nodeConfigs[0], "aLiCe", alicePrivateKey.PublicKey()); err != nil {
 		log.Fatalf("Failed to add user: %v", err)
 	}
 	// Initialize Bob's mailproxy.
 	// XXX bobProvider := s.authProviders[1].Identifier
-	if err = s.thwackUser(s.nodeConfigs[1], "BoB", bobPrivateKey.PublicKey()); err != nil {
+	if err = k.thwackUser(k.nodeConfigs[1], "BoB", bobPrivateKey.PublicKey()); err != nil {
 		log.Fatalf("Failed to add user: %v", err)
 	}
+	*/
 
 	// Wait for a signal to tear it all down.
 	ch := make(chan os.Signal)
@@ -665,7 +679,7 @@ func main() {
 		f.Close()
 	}
 
-	for _, svr := range s.servers {
+	for _, svr := range k.servers {
 		svr.Shutdown()
 	}
 	log.Printf("All servers halted.")
@@ -673,9 +687,9 @@ func main() {
 	// Wait for the log tailers to return.  This typically won't re-log the
 	// shutdown sequence, but if people need the logs from that, they will
 	// be in each `DataDir` as needed.
-	for _, t := range s.tails {
+	for _, t := range k.tails {
 		t.StopAtEOF()
 	}
-	s.Wait()
+	k.Wait()
 	log.Printf("Terminated.")
 }
