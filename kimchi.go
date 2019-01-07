@@ -1,5 +1,5 @@
 // kimchi.go - Katzenpost self contained test network.
-// Copyright (C) 2017  Yawning Angel, David Stainton.
+// Copyright (C) 2017  Yawning Angel, David Stainton, Masala.
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Affero General Public License as
@@ -14,23 +14,19 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-package main
+package kimchi
 
 import (
 	"bytes"
 	"errors"
-	"flag"
 	"fmt"
 	"io"
 	"io/ioutil"
 	"log"
 	"net/textproto"
 	"os"
-	"os/signal"
 	"path/filepath"
-	"runtime/pprof"
 	"sync"
-	"syscall"
 
 	"github.com/hpcloud/tail"
 	vServer "github.com/katzenpost/authority/voting/server"
@@ -116,10 +112,14 @@ func NewKimchi(basePort int, baseDir string, voting bool, nVoting, nProvider, nM
 		fmt.Fprintf(os.Stderr, "Failed to initialize logging: %v\n", err)
 		os.Exit(-1)
 	}
+	if err = k.initConfig(); err != nil {
+		fmt.Fprintf(os.Stderr, "Failed to initConfig(): %v", err)
+		return nil
+	}
 	return k
 }
 
-func (k *kimchi) run() {
+func (k *kimchi) Run() {
 	// Launch all the nodes.
 	for _, v := range k.nodeConfigs {
 		v.FixupAndValidate()
@@ -131,6 +131,7 @@ func (k *kimchi) run() {
 		k.servers = append(k.servers, svr)
 		go k.logTailer(v.Server.Identifier, filepath.Join(v.Server.DataDir, v.Logging.File))
 	}
+	k.runAuthority()
 }
 
 func (k *kimchi) initConfig() error {
@@ -194,7 +195,6 @@ func (k *kimchi) runAuthority() {
 	}
 }
 
-
 func (k *kimchi) initLogging() error {
 	logFilePath := filepath.Join(k.baseDir, logFile)
 	f, err := os.OpenFile(logFilePath, os.O_CREATE|os.O_APPEND|os.O_WRONLY, 0600)
@@ -234,7 +234,9 @@ func (k *kimchi) genVotingAuthoritiesCfg() error {
 			DataDir:    filepath.Join(k.baseDir, fmt.Sprintf("authority%d", i)),
 		}
 		k.lastPort += 1
-		os.Mkdir(cfg.Authority.DataDir, 0700)
+		if err := os.Mkdir(cfg.Authority.DataDir, 0700); err != nil {
+			return err
+		}
 		idKey, err := eddsa.NewKeypair(rand.Reader)
 		if err != nil {
 			return err
@@ -402,7 +404,9 @@ func (k *kimchi) genAuthConfig() error {
 	cfg.Logging.Level = "DEBUG"
 
 	// Mkdir
-	os.Mkdir(cfg.Authority.DataDir, 0700)
+	if err := os.Mkdir(cfg.Authority.DataDir, 0700); err != nil {
+		return err
+	}
 
 	// Generate Keys
 	idKey, err := eddsa.NewKeypair(rand.Reader)
@@ -620,73 +624,10 @@ func (k *kimchi) logTailer(prefix, path string) {
 	}
 }
 
-func main() {
-
-	var voting = flag.Bool("voting", false, "use voting authorities")
-	var nVoting = flag.Int("nv", 3, "the number of voting authorities")
-	var nProvider = flag.Int("np", 2, "the number of providers")
-	var nMix = flag.Int("nm", 6, "the number of mixes")
-	var cpuprofile = flag.String("cpuprofile", "", "write cpu profile to file")
-	var memprofile = flag.String("memprofile", "", "write memory profile to this file")
-
-	flag.Parse()
-
-	if *cpuprofile != "" {
-		f, err := os.Create(*cpuprofile)
-		if err != nil {
-			log.Fatal(err)
-		}
-		pprof.StartCPUProfile(f)
-		defer pprof.StopCPUProfile()
-	}
-
-	k := NewKimchi(basePort, "",  *voting, *nVoting, *nProvider, *nMix)
-
-	k.run()
-
-	// Generate the private keys used by the clients in advance so they
-	// can know each other.
-	alicePrivateKey, _ := ecdh.NewKeypair(rand.Reader)
-	bobPrivateKey, _ := ecdh.NewKeypair(rand.Reader)
-	k.recipients["alice@provider-0.example.org"] = alicePrivateKey.PublicKey()
-	k.recipients["bob@provider-1.example.org"] = bobPrivateKey.PublicKey()
-
-	/*
-	var err error
-	// Initialize Alice's mailproxy.
-	// XXX aliceProvider := s.authProviders[0].Identifier
-	if err = k.thwackUser(k.nodeConfigs[0], "aLiCe", alicePrivateKey.PublicKey()); err != nil {
-		log.Fatalf("Failed to add user: %v", err)
-	}
-	// Initialize Bob's mailproxy.
-	// XXX bobProvider := s.authProviders[1].Identifier
-	if err = k.thwackUser(k.nodeConfigs[1], "BoB", bobPrivateKey.PublicKey()); err != nil {
-		log.Fatalf("Failed to add user: %v", err)
-	}
-	*/
-
-	// Wait for a signal to tear it all down.
-	ch := make(chan os.Signal)
-	signal.Notify(ch, os.Interrupt, syscall.SIGTERM)
-	<-ch
-	log.Printf("Received shutdown request.")
-	if *memprofile != "" {
-		f, err := os.Create(*memprofile)
-		if err != nil {
-			log.Fatal(err)
-		}
-		pprof.WriteHeapProfile(f)
-		f.Close()
-	}
-
+func (k *kimchi) Shutdown() {
 	for _, svr := range k.servers {
 		svr.Shutdown()
 	}
-	log.Printf("All servers halted.")
-
-	// Wait for the log tailers to return.  This typically won't re-log the
-	// shutdown sequence, but if people need the logs from that, they will
-	// be in each `DataDir` as needed.
 	for _, t := range k.tails {
 		t.StopAtEOF()
 	}

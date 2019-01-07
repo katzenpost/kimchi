@@ -539,7 +539,6 @@
     "github.com/katzenpost/core/crypto/ecdh",
     "github.com/katzenpost/core/crypto/eddsa",
     "github.com/katzenpost/core/crypto/rand",
-    "github.com/katzenpost/core/epochtime",
     "github.com/katzenpost/core/thwack",
     "github.com/katzenpost/mailproxy",
     "github.com/katzenpost/mailproxy/config",
