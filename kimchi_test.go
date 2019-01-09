@@ -24,9 +24,7 @@ func TestBootstrapNonvoting(t *testing.T) {
 	go func() {
 		<-time.After(1 * time.Minute)
 		t.Logf("Received shutdown request.")
-		for _, svr := range k.servers {
-			svr.Shutdown()
-		}
+		k.Shutdown()
 		t.Logf("All servers halted.")
 	}()
 
