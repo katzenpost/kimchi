@@ -29,13 +29,17 @@ import (
 	"sync"
 
 	"github.com/hpcloud/tail"
+	vClient "github.com/katzenpost/authority/voting/client"
 	vServer "github.com/katzenpost/authority/voting/server"
 	vConfig "github.com/katzenpost/authority/voting/server/config"
+	nvClient "github.com/katzenpost/authority/nonvoting/client"
 	aServer "github.com/katzenpost/authority/nonvoting/server"
 	aConfig "github.com/katzenpost/authority/nonvoting/server/config"
 	"github.com/katzenpost/core/crypto/ecdh"
 	"github.com/katzenpost/core/crypto/eddsa"
 	"github.com/katzenpost/core/crypto/rand"
+	klog "github.com/katzenpost/core/log"
+	"github.com/katzenpost/core/pki"
 	"github.com/katzenpost/core/thwack"
 	"github.com/katzenpost/mailproxy"
 	pConfig "github.com/katzenpost/mailproxy/config"
@@ -195,6 +199,24 @@ func (k *kimchi) runAuthority() {
 	}
 }
 
+func (k *kimchi) pkiClient() (pki.Client, error) {
+	b, err := klog.New("", "DEBUG", false)
+	if err != nil {
+		return nil, err
+	}
+	if k.voting {
+		p, err := sConfig.AuthorityPeersFromPeers(k.votingPeers())
+		if err != nil {
+			return nil, err
+		}
+		cfg := vClient.Config{LogBackend: b, Authorities: p}
+		return vClient.New(&cfg)
+	} else {
+		cfg := nvClient.Config{LogBackend: b, Address: k.authConfig.Authority.Addresses[0], PublicKey: k.authConfig.Debug.IdentityKey.PublicKey()}
+		return nvClient.New(&cfg)
+	}
+}
+
 func (k *kimchi) initLogging() error {
 	logFilePath := filepath.Join(k.baseDir, logFile)
 	f, err := os.OpenFile(logFilePath, os.O_CREATE|os.O_APPEND|os.O_WRONLY, 0600)
@@ -275,6 +297,30 @@ func (k *kimchi) genVotingAuthoritiesCfg() error {
 	return nil
 }
 
+func (k *kimchi) votingPeers() []*sConfig.Peer {
+	peers := []*sConfig.Peer{}
+	for _, peer := range k.votingAuthConfigs {
+		idKey, err := peer.Debug.IdentityKey.PublicKey().MarshalText()
+		if err != nil {
+			continue
+		}
+		linkKey, err := peer.Debug.LinkKey.PublicKey().MarshalText()
+		if err != nil {
+			continue
+		}
+		p := &sConfig.Peer{
+			Addresses:         peer.Authority.Addresses,
+			IdentityPublicKey: string(idKey),
+			LinkPublicKey: string(linkKey),
+		}
+		if len(peer.Authority.Addresses) == 0 {
+			continue
+		}
+		peers = append(peers, p)
+	}
+	return peers
+}
+
 func (k *kimchi) genNodeConfig(isProvider bool, isVoting bool) error {
 	const serverLogFile = "katzenpost.log"
 
@@ -306,30 +352,8 @@ func (k *kimchi) genNodeConfig(isProvider bool, isVoting bool) error {
 	cfg.Debug.IdentityKey = identity
 
 	if isVoting {
-		peers := []*sConfig.Peer{}
-		for _, peer := range k.votingAuthConfigs {
-			idKey, err := peer.Debug.IdentityKey.PublicKey().MarshalText()
-			if err != nil {
-				return err
-			}
-			linkKey, err := peer.Debug.LinkKey.PublicKey().MarshalText()
-			if err != nil {
-				return err
-			}
-			p := &sConfig.Peer{
-				Addresses:         peer.Authority.Addresses,
-				IdentityPublicKey: string(idKey),
-				LinkPublicKey: string(linkKey),
-			}
-			if len(peer.Authority.Addresses) == 0 {
-				panic("wtf")
-			}
-			peers = append(peers, p)
-		}
 		cfg.PKI = &sConfig.PKI{
-			Voting: &sConfig.Voting{
-				Peers: peers,
-			},
+			Voting: &sConfig.Voting{Peers: k.votingPeers(),},
 		}
 	} else {
 		cfg.PKI = new(sConfig.PKI)
