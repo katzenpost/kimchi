@@ -40,9 +40,10 @@ func TestBootstrapVoting(t *testing.T) {
 	t.Logf("Running mixnet.")
 
 	go func() {
-		<-time.After(1 * time.Minute)
+		<-time.After(3 * time.Minute)
 		// verify that consensus was made
 		p, err := k.pkiClient()
+		require.NoError(err)
 		epoch, _, _ := epochtime.Now()
 		ctx, cancel := context.WithTimeout(context.Background(), time.Second*5)
 		defer cancel()
