@@ -8,23 +8,23 @@ required = ["github.com/coreos/bbolt"]
   name = "github.com/coreos/bbolt"
 
 [[constraint]]
-  version = "v0.0.7"
+  branch = "b64_srv"
   name = "github.com/katzenpost/core"
 
 [[constraint]]
-  version = "v0.0.8"
+  branch = "clockwork.1"
   name = "github.com/katzenpost/authority"
 
-[[constraint]]
-  version = "v0.0.5"
+[[override]]
+  branch = "voting_release"
   name = "github.com/katzenpost/mailproxy"
 
 [[override]]
-  version = "v0.0.5"
+  branch = "fix_peercredentials_use"
   name = "github.com/katzenpost/minclient"
 
-[[constraint]]
-  version = "v0.0.7"
+[[override]]
+  branch = "add_clockwork"
   name = "github.com/katzenpost/server"
 
 # other stuff

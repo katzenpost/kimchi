@@ -83,12 +83,20 @@
   revision = "5312a61534124124185d41f09206b9fef1d88403"
 
 [[projects]]
-  digest = "1:3762d59edaa6e5c71d5e594c020c8391f274ff283e9c30fb43c518ec59a3f9b3"
+  digest = "1:5f7414cf41466d4b4dd7ec52b2cd3e481e08cfd11e7e24fef730c0e483e88bb1"
   name = "github.com/coreos/bbolt"
   packages = ["."]
   pruneopts = "UT"
-  revision = "7ee3ded59d4835e10f3e7d0f7603c42aa5e83820"
-  version = "v1.3.1-etcd.8"
+  revision = "63597a96ec0ad9e6d43c3fc81e809909e0237461"
+  version = "v1.3.2"
+
+[[projects]]
+  digest = "1:ffe9824d294da03b391f44e1ae8281281b4afc1bdaa9588c9097785e3af10cec"
+  name = "github.com/davecgh/go-spew"
+  packages = ["spew"]
+  pruneopts = "UT"
+  revision = "8991bc29aa16c548c550c7ff78260e27b9ab7c73"
+  version = "v1.1.1"
 
 [[projects]]
   digest = "1:1e9a0ec4f7e852123fefad9aadd7647eed1e9fd3716118e99a4b3dc463705c82"
@@ -145,18 +153,18 @@
   name = "github.com/hashicorp/go-hclog"
   packages = ["."]
   pruneopts = "UT"
-  revision = "61d530d6c27f994fb6c83b80f99a69c54125ec8a"
+  revision = "4783caec6f2e5cdd47fab8b2bb47ce2ce5c546b7"
 
 [[projects]]
   branch = "master"
-  digest = "1:1f0c8665817a698bf12c6ad29922d6cdb85ecaa54dd404d77f91f58c6bccd84e"
+  digest = "1:77a6108b8eb3cd0feac4eeb3e032f36c8fdfe9497671952fd9eb682b9c503158"
   name = "github.com/hashicorp/go-plugin"
   packages = [
     ".",
     "internal/proto",
   ]
   pruneopts = "UT"
-  revision = "f444068e8f5a19853177f7aa0aea7e7d95b5b528"
+  revision = "362c99b11937c6a84686ee5726a8170e921ab406"
 
 [[projects]]
   branch = "master"
@@ -204,7 +212,8 @@
   version = "v0.1.0"
 
 [[projects]]
-  digest = "1:e1e3579edcd8120ed502eb80c3ed406ee2087570024db819470c38435693ba5c"
+  branch = "clockwork.1"
+  digest = "1:2a24685837b8088c873658808afb678ad64583fe41793b271d3d008bae4f20c3"
   name = "github.com/katzenpost/authority"
   packages = [
     "internal/s11n",
@@ -216,11 +225,11 @@
     "voting/server/config",
   ]
   pruneopts = "UT"
-  revision = "846328a78404fe80b6037463a21d399ff192e60c"
-  version = "v0.0.8"
+  revision = "d19a19fcef0e9df8901a3a7a0dfe9f6a5291a37e"
 
 [[projects]]
-  digest = "1:3e4258224fc1cf961b7be237a9ccd36eae3a85a2a9254cebc41a5b643e934251"
+  branch = "b64_srv"
+  digest = "1:2af0abcb584f5b015b3ddd0ccbde3fafd8598199b4566793099da21d6b33d32d"
   name = "github.com/katzenpost/core"
   packages = [
     "constants",
@@ -245,10 +254,10 @@
     "worker",
   ]
   pruneopts = "UT"
-  revision = "b5543b8fc9ef912272fa480ae3c8d4c657e80514"
-  version = "v0.0.7"
+  revision = "f2c0b23c98e8a9d4698507a0ef11aeca26441746"
 
 [[projects]]
+  branch = "voting_release"
   digest = "1:1c3640d956aeb260c55a6de3a447d7d15ccc767c92cc14eca2a431dac6e17cdd"
   name = "github.com/katzenpost/mailproxy"
   packages = [
@@ -266,9 +275,9 @@
   ]
   pruneopts = "UT"
   revision = "99635c060607652e59d74e2f53462fa0d2840084"
-  version = "v0.0.5"
 
 [[projects]]
+  branch = "fix_peercredentials_use"
   digest = "1:b3f6b1bdb2bf60da48035d5bf8073cc7d01a2d5a495603196905da4d37de012f"
   name = "github.com/katzenpost/minclient"
   packages = [
@@ -277,7 +286,6 @@
   ]
   pruneopts = "UT"
   revision = "61dd7b17c6a191c16d01cfa268e3e3cacde219f3"
-  version = "v0.0.5"
 
 [[projects]]
   branch = "master"
@@ -288,7 +296,8 @@
   revision = "08e83772a9119dc0b35028bc6d8412dc22b0a9ee"
 
 [[projects]]
-  digest = "1:10dcc5f6ff99fffa61e6222311dba5da61fe01c054da2ac74fe4eb0c7f03b67f"
+  branch = "add_clockwork"
+  digest = "1:fadef619666bf9be04920d2e76c17c307dfdd2c49f84aba3250505258205b87c"
   name = "github.com/katzenpost/server"
   packages = [
     ".",
@@ -318,8 +327,7 @@
     "userdb/externuserdb",
   ]
   pruneopts = "UT"
-  revision = "49cf51333cc9afee70c0acbd57d83408e24134a9"
-  version = "v0.0.7"
+  revision = "75721c273340d28bba4ab41b2c357f1037007a41"
 
 [[projects]]
   digest = "1:42eb1f52b84a06820cedc9baec2e710bfbda3ee6dac6cdb97f8b9a5066134ec6"
@@ -338,12 +346,20 @@
   version = "v1.0.0"
 
 [[projects]]
-  digest = "1:40e195917a951a8bf867cd05de2a46aaf1806c50cf92eebf4c16f78cd196f747"
+  digest = "1:cf31692c14422fa27c83a05292eb5cbe0fb2775972e8f1f8446a71549bd8980b"
   name = "github.com/pkg/errors"
   packages = ["."]
   pruneopts = "UT"
-  revision = "645ef00459ed84a119197bfb8d8205042c6df63d"
-  version = "v0.8.0"
+  revision = "ba968bfe8b2f7e042a574c888954fccecfa385b4"
+  version = "v0.8.1"
+
+[[projects]]
+  digest = "1:0028cb19b2e4c3112225cd871870f2d9cf49b9b4276531f03438a88e94be86fe"
+  name = "github.com/pmezard/go-difflib"
+  packages = ["difflib"]
+  pruneopts = "UT"
+  revision = "792786c7400a136282c1664665ae0a8db921c6c2"
+  version = "v1.0.0"
 
 [[projects]]
   branch = "master"
@@ -354,16 +370,24 @@
   revision = "b93303610bbe1b2cc570daff2de7d77dfac329a0"
 
 [[projects]]
-  digest = "1:03aa6e485e528acb119fb32901cf99582c380225fc7d5a02758e08b180cb56c3"
+  digest = "1:972c2427413d41a1e06ca4897e8528e5a1622894050e2f527b38ddf0f343f759"
+  name = "github.com/stretchr/testify"
+  packages = ["assert"]
+  pruneopts = "UT"
+  revision = "ffdc059bfe9ce6a4e144ba849dbedead332c6053"
+  version = "v1.3.0"
+
+[[projects]]
+  digest = "1:4887e9e89c80299aa520d718239809fdd2a47a9aa394909b169959bfbc424ddf"
   name = "github.com/ugorji/go"
   packages = ["codec"]
   pruneopts = "UT"
-  revision = "b4c50a2b199d93b13dc15e78929cfb23bfdf21ab"
-  version = "v1.1.1"
+  revision = "8fd0f8d918c8f0b52d0af210a812ba882cc31a1e"
+  version = "v1.1.2"
 
 [[projects]]
   branch = "master"
-  digest = "1:e63dfc8ef9940dff2395db61c2cdc01f7ef9b41cd77f9e81c60b644800878907"
+  digest = "1:797ae413db9633eb2017b12e9692fa89fb0b4cb772c6315cb7ae7497945736e8"
   name = "golang.org/x/crypto"
   packages = [
     "blake2b",
@@ -378,11 +402,11 @@
     "sha3",
   ]
   pruneopts = "UT"
-  revision = "ff983b9c42bc9fbf91556e191cc8efb585c16908"
+  revision = "b8fe1690c61389d7d2a8074a507d1d40c5d30448"
 
 [[projects]]
   branch = "master"
-  digest = "1:fa6c550148e5faff1ee3b01b2d73ae5b833dbe502c7631fd70dc1a0775a8d060"
+  digest = "1:c69cec04fb82d538ada1b87711ef6d786947fc6b2bf712af8691bcc03eea9843"
   name = "golang.org/x/net"
   packages = [
     "context",
@@ -396,18 +420,18 @@
     "trace",
   ]
   pruneopts = "UT"
-  revision = "927f97764cc334a6575f4b7a1584a147864d5723"
+  revision = "d26f9f9a57f3fab6a695bec0d84433c2c50f8bbf"
 
 [[projects]]
   branch = "master"
-  digest = "1:6c854c3734cdaba6b8d4e6795e234213418a6e963260065adadee24665ca56a3"
+  digest = "1:2a28a611d7589bfcf3a8546464a3e9c8e0702ca62b39cdceaada7d04af8f974a"
   name = "golang.org/x/sys"
   packages = [
     "cpu",
     "unix",
   ]
   pruneopts = "UT"
-  revision = "82a175fd1598e8a172e58ebdf5ed262bb29129e5"
+  revision = "41f3e6584952bb034a481797859f6ab34b6803bd"
 
 [[projects]]
   digest = "1:4c3c045deaf0ae4d4b14f3abd22bbd322693d1bee1cc59b1e1667fdd3b683e0e"
@@ -450,10 +474,10 @@
   name = "google.golang.org/genproto"
   packages = ["googleapis/rpc/status"]
   pruneopts = "UT"
-  revision = "bd9b4fb69e2ffd37621a6caa54dcbead29b546f2"
+  revision = "4b09977fb92221987e99d190c8f88f2c92727a29"
 
 [[projects]]
-  digest = "1:03af1505694005143ff6dc5d0e2802c8200ddb618b1d3f7201482f53798b99b4"
+  digest = "1:a887a56d0ff92cf05b4bb6004b46fc6e64d3fb6aca4eaeb1466bdce183ba5004"
   name = "google.golang.org/grpc"
   packages = [
     ".",
@@ -491,8 +515,8 @@
     "tap",
   ]
   pruneopts = "UT"
-  revision = "df014850f6dee74ba2fc94874043a9f3f75fbfd8"
-  version = "v1.17.0"
+  revision = "a02b0774206b209466313a0b525d2c738fe407eb"
+  version = "v1.18.0"
 
 [[projects]]
   digest = "1:975a4480c40f2d0b95e1f83d3ec1aa29a2774e80179e08a9a4ba2aab86721b23"
@@ -532,19 +556,27 @@
   input-imports = [
     "github.com/coreos/bbolt",
     "github.com/hpcloud/tail",
+    "github.com/jonboulle/clockwork",
+    "github.com/katzenpost/authority/nonvoting/client",
     "github.com/katzenpost/authority/nonvoting/server",
     "github.com/katzenpost/authority/nonvoting/server/config",
+    "github.com/katzenpost/authority/voting/client",
     "github.com/katzenpost/authority/voting/server",
     "github.com/katzenpost/authority/voting/server/config",
+    "github.com/katzenpost/core/crypto/cert",
     "github.com/katzenpost/core/crypto/ecdh",
     "github.com/katzenpost/core/crypto/eddsa",
     "github.com/katzenpost/core/crypto/rand",
+    "github.com/katzenpost/core/epochtime",
+    "github.com/katzenpost/core/log",
+    "github.com/katzenpost/core/pki",
     "github.com/katzenpost/core/thwack",
     "github.com/katzenpost/mailproxy",
     "github.com/katzenpost/mailproxy/config",
     "github.com/katzenpost/mailproxy/event",
     "github.com/katzenpost/server",
     "github.com/katzenpost/server/config",
+    "github.com/stretchr/testify/assert",
   ]
   solver-name = "gps-cdcl"
   solver-version = 1
