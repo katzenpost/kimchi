@@ -30,8 +30,8 @@ func TestBootstrapNonvoting(t *testing.T) {
 	nProvider := 2
 	nMix := 6
 	k := NewKimchi(basePort, "",  voting, nVoting, nProvider, nMix)
+	t.Logf("Running Bootstrap Nonvoting mixnet.")
 	k.Run()
-	t.Logf("Running mixnet.")
 
 	go func() {
 		defer k.Shutdown()
@@ -61,8 +61,8 @@ func TestBootstrapVoting(t *testing.T) {
 	nProvider := 2
 	nMix := 6
 	k := NewKimchi(basePort, "",  voting, nVoting, nProvider, nMix)
+	t.Logf("Running Bootstrap Voting mixnet.")
 	k.Run()
-	t.Logf("Running mixnet.")
 
 	go func() {
 		defer k.Shutdown()
@@ -75,8 +75,11 @@ func TestBootstrapVoting(t *testing.T) {
 			ctx, cancel := context.WithTimeout(context.Background(), time.Second*5)
 			defer cancel()
 			c, _, err := p.Get(ctx, epoch)
-			assert.NoError(err)
-			t.Logf("Got a consensus: %v", c)
+			if assert.NoError(err) {
+				t.Logf("Got a consensus: %v", c)
+			} else {
+				t.Logf("Consensus failed")
+			}
 		}
 	}()
 
@@ -91,13 +94,15 @@ func TestBootstrapVotingThreshold(t *testing.T) {
 	nProvider := 2
 	nMix := 6
 	k := NewKimchi(basePort, "",  voting, nVoting, nProvider, nMix)
+	t.Logf("Running Bootstrap Voting mixnet.")
 	k.Run()
-	t.Logf("Launching Mixnet")
 
+	// start a goroutine that kills one authority and verifies that
+	// consensus is reached with the remaining authorities
 	go func() {
 		defer k.Shutdown()
 		// Varying this delay will set where in the
-		// voting protocl the authority fails.
+		// voting protocol the authority fails.
 		<-time.After(30 * time.Second)
 		t.Logf("Killing an Authority")
 		if !assert.True(k.killAnAuth()) {
@@ -118,12 +123,16 @@ func TestBootstrapVotingThreshold(t *testing.T) {
 				s, err := cert.GetSignatures(r)
 				if assert.NoError(err) {
 					// Confirm exactly 2 signatures are present.
-					assert.Equal(2, len(s))
-					t.Logf("2 Signatures found on consensus as expected")
+					if assert.Equal(2, len(s)) {
+						t.Logf("2 Signatures found on consensus as expected")
+					} else {
+						t.Logf("Found %d signatures, expected 2", len(s))
+					}
 				}
 			}
 		}
 	}()
+
 
 	k.Wait()
 	t.Logf("Terminated.")
