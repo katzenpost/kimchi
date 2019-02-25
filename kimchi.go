@@ -42,9 +42,6 @@ import (
 	klog "github.com/katzenpost/core/log"
 	"github.com/katzenpost/core/pki"
 	"github.com/katzenpost/core/thwack"
-	"github.com/katzenpost/mailproxy"
-	pConfig "github.com/katzenpost/mailproxy/config"
-	"github.com/katzenpost/mailproxy/event"
 	nServer "github.com/katzenpost/server"
 	sConfig "github.com/katzenpost/server/config"
 )
@@ -520,85 +517,6 @@ func (k *kimchi) runVotingAuthorities() error {
 		k.servers = append(k.servers, server)
 	}
 	return nil
-}
-
-func (k *kimchi) newMailProxy(user, provider string, privateKey *ecdh.PrivateKey, isVoting bool) (*mailproxy.Proxy, error) {
-	const (
-		proxyLogFile = "katzenpost.log"
-		authID       = "testAuth"
-	)
-
-	cfg := new(pConfig.Config)
-
-	dispName := fmt.Sprintf("mailproxy-%v@%v", user, provider)
-
-	// Proxy section.
-	cfg.Proxy = new(pConfig.Proxy)
-	cfg.Proxy.POP3Address = fmt.Sprintf("127.0.0.1:%d", k.lastPort)
-	k.lastPort++
-	cfg.Proxy.SMTPAddress = fmt.Sprintf("127.0.0.1:%d", k.lastPort)
-	k.lastPort++
-	cfg.Proxy.DataDir = filepath.Join(k.baseDir, dispName)
-
-	// Logging section.
-	cfg.Logging = new(pConfig.Logging)
-	cfg.Logging.File = proxyLogFile
-	cfg.Logging.Level = "DEBUG"
-
-	// Management section.
-	cfg.Management = new(pConfig.Management)
-	cfg.Management.Enable = true
-
-	// Account section.
-	acc := new(pConfig.Account)
-	acc.User = user
-	acc.Provider = provider
-	acc.LinkKey = privateKey
-	acc.IdentityKey = privateKey
-	// acc.StorageKey = privateKey
-	cfg.Account = append(cfg.Account, acc)
-
-	// UpstreamProxy section.
-	/*
-		cfg.UpstreamProxy = new(pConfig.UpstreamProxy)
-		cfg.UpstreamProxy.Type = "tor+socks5"
-		// cfg.UpstreamProxy.Network = "unix"
-		// cfg.UpstreamProxy.Address = "/tmp/socks.socket"
-		cfg.UpstreamProxy.Network = "tcp"
-		cfg.UpstreamProxy.Address = "127.0.0.1:1080"
-	*/
-
-	// Recipients section.
-	cfg.Recipients = k.recipients
-
-	if err := cfg.FixupAndValidate(); err != nil {
-		return nil, err
-	}
-
-	p, err := mailproxy.New(cfg)
-	if err != nil {
-		return nil, err
-	}
-
-	go func() {
-		for ev := range p.EventSink {
-			log.Printf("%v: Event: %+v", dispName, ev)
-			switch e := ev.(type) {
-			case *event.KaetzchenReplyEvent:
-				// Just assume this is a keyserver query for now.
-				if u, k, err := p.ParseKeyQueryResponse(e.Payload); err != nil {
-					log.Printf("%v: Keyserver query failed: %v", dispName, err)
-				} else {
-					log.Printf("%v: Keyserver reply: %v -> %v", dispName, u, k)
-				}
-			default:
-			}
-		}
-	}()
-
-	go k.logTailer(dispName, filepath.Join(cfg.Proxy.DataDir, proxyLogFile))
-
-	return p, nil
 }
 
 func (k *kimchi) thwackUser(provider *sConfig.Config, user string, pubKey *ecdh.PublicKey) error {
