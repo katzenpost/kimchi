@@ -29,7 +29,7 @@ func TestBootstrapNonvoting(t *testing.T) {
 	nVoting := 0
 	nProvider := 2
 	nMix := 6
-	k := NewKimchi(basePort, "",  voting, nVoting, nProvider, nMix)
+	k := NewKimchi(basePort+50, "",  voting, nVoting, nProvider, nMix)
 	t.Logf("Running Bootstrap Nonvoting mixnet.")
 	k.Run()
 
@@ -60,7 +60,7 @@ func TestBootstrapVoting(t *testing.T) {
 	nVoting := 3
 	nProvider := 2
 	nMix := 6
-	k := NewKimchi(basePort, "",  voting, nVoting, nProvider, nMix)
+	k := NewKimchi(basePort+100, "",  voting, nVoting, nProvider, nMix)
 	t.Logf("Running Bootstrap Voting mixnet.")
 	k.Run()
 
