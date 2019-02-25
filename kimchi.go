@@ -28,7 +28,6 @@ import (
 	"path/filepath"
 	"sync"
 
-	"github.com/jonboulle/clockwork"
 	"github.com/hpcloud/tail"
 	vClient "github.com/katzenpost/authority/voting/client"
 	vServer "github.com/katzenpost/authority/voting/server"
@@ -73,7 +72,6 @@ type kimchi struct {
 	nProvider int
 	nMix      int
 
-	clock clockwork.Clock
 	nodeConfigs []*sConfig.Config
 	lastPort    uint16
 	nodeIdx     int
@@ -92,7 +90,6 @@ type server interface {
 
 func NewKimchi(basePort int, baseDir string, voting bool, nVoting, nProvider, nMix int) *kimchi {
 	k := &kimchi{
-		clock:       clockwork.NewRealClock(),
 		lastPort:    uint16(basePort + 1),
 		recipients:  make(map[string]*ecdh.PublicKey),
 		nodeConfigs: make([]*sConfig.Config, 0),
@@ -127,7 +124,7 @@ func (k *kimchi) Run() {
 	// Launch all the nodes.
 	for _, v := range k.nodeConfigs {
 		v.FixupAndValidate()
-		svr, err := nServer.New(v, k.clock)
+		svr, err := nServer.New(v)
 		if err != nil {
 			log.Fatalf("Failed to launch node: %v", err)
 		}
@@ -509,7 +506,7 @@ func (k *kimchi) runNonvoting() error {
 func (k *kimchi) runVotingAuthorities() error {
 	for _, vCfg := range k.votingAuthConfigs {
 		vCfg.FixupAndValidate()
-		server, err := vServer.New(vCfg, k.clock)
+		server, err := vServer.New(vCfg)
 		if err != nil {
 			return err
 		}
