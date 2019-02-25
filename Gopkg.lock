@@ -27,7 +27,7 @@
 
 [[projects]]
   branch = "master"
-  digest = "1:2aa0b1f795439e239bcc469d8e0a60058dcd2ff1aacc8f04c1694f6bac91e049"
+  digest = "1:9f5ceb6f27265ae59e233b2ceba837bf78f1ea89265b1f5eee551f3c0e4825ea"
   name = "git.schwanenlied.me/yawning/bsaes.git"
   packages = [
     ".",
@@ -37,7 +37,7 @@
     "internal/modes",
   ]
   pruneopts = "UT"
-  revision = "c0276d75487ef7aceab140c9eb31601dd7d18bd4"
+  revision = "e466e3c35f68a96448e3718906ca93c2eadcffe7"
 
 [[projects]]
   branch = "master"
@@ -115,25 +115,6 @@
   version = "v1.1.0"
 
 [[projects]]
-  digest = "1:90f6e3a87e2647608b03bd474a485af2dffadcf3c7108d39f01b6f46e8aafec8"
-  name = "github.com/emersion/go-message"
-  packages = [
-    ".",
-    "charset",
-  ]
-  pruneopts = "UT"
-  revision = "f7e2be8074d097a816a1f5bd9d502adc46275d4a"
-  version = "v0.9.1"
-
-[[projects]]
-  branch = "master"
-  digest = "1:47fffd6812689e229e8072737578af99cad0b17707cc07c36344c63bb6b797f1"
-  name = "github.com/emersion/go-textwrapper"
-  packages = ["."]
-  pruneopts = "UT"
-  revision = "d0e65e56babe3f687ff94c1d764ca0e6aa7723ee"
-
-[[projects]]
   digest = "1:4c0989ca0bcd10799064318923b9bc2db6b4d6338dd75f3f2d86c3511aaaf5cf"
   name = "github.com/golang/protobuf"
   packages = [
@@ -148,23 +129,23 @@
   version = "v1.2.0"
 
 [[projects]]
-  branch = "master"
-  digest = "1:0876aeb6edb07e20b6b0ce1d346655cb63dbe0a26ccfb47b68a9b7697709777b"
+  digest = "1:2fea68d1a506e91f177579597a6a4d13d460d288e9f7948ce9d717fe77eaedcc"
   name = "github.com/hashicorp/go-hclog"
   packages = ["."]
   pruneopts = "UT"
-  revision = "4783caec6f2e5cdd47fab8b2bb47ce2ce5c546b7"
+  revision = "90f2fbc4844c54471c74c1395e1d06ce0582ec59"
+  version = "v0.7.0"
 
 [[projects]]
   branch = "master"
-  digest = "1:77a6108b8eb3cd0feac4eeb3e032f36c8fdfe9497671952fd9eb682b9c503158"
+  digest = "1:a8a8c6a96d90bce9a5d93881e10cc33fe54be1963c9de6a6c9d234387020cfd0"
   name = "github.com/hashicorp/go-plugin"
   packages = [
     ".",
-    "internal/proto",
+    "internal/plugin",
   ]
   pruneopts = "UT"
-  revision = "362c99b11937c6a84686ee5726a8170e921ab406"
+  revision = "3f118e8ee104b6f22aeb12453fab56aed1356186"
 
 [[projects]]
   branch = "master"
@@ -212,8 +193,8 @@
   version = "v0.1.0"
 
 [[projects]]
-  branch = "clockwork.1"
-  digest = "1:2a24685837b8088c873658808afb678ad64583fe41793b271d3d008bae4f20c3"
+  branch = "fix_random_peer"
+  digest = "1:d859319feb261432e5a530720b11cb1d721fa4542b9ba3226917909f39f08251"
   name = "github.com/katzenpost/authority"
   packages = [
     "internal/s11n",
@@ -225,7 +206,7 @@
     "voting/server/config",
   ]
   pruneopts = "UT"
-  revision = "d19a19fcef0e9df8901a3a7a0dfe9f6a5291a37e"
+  revision = "7912b83def43d0a203493b687d86c400e4f78fa8"
 
 [[projects]]
   branch = "b64_srv"
@@ -257,37 +238,6 @@
   revision = "f2c0b23c98e8a9d4698507a0ef11aeca26441746"
 
 [[projects]]
-  branch = "voting_release"
-  digest = "1:1c3640d956aeb260c55a6de3a447d7d15ccc767c92cc14eca2a431dac6e17cdd"
-  name = "github.com/katzenpost/mailproxy"
-  packages = [
-    ".",
-    "config",
-    "event",
-    "internal/account",
-    "internal/authority",
-    "internal/glue",
-    "internal/imf",
-    "internal/pkiclient",
-    "internal/pop3",
-    "internal/proxy",
-    "internal/recipient",
-  ]
-  pruneopts = "UT"
-  revision = "99635c060607652e59d74e2f53462fa0d2840084"
-
-[[projects]]
-  branch = "fix_peercredentials_use"
-  digest = "1:b3f6b1bdb2bf60da48035d5bf8073cc7d01a2d5a495603196905da4d37de012f"
-  name = "github.com/katzenpost/minclient"
-  packages = [
-    ".",
-    "block",
-  ]
-  pruneopts = "UT"
-  revision = "61dd7b17c6a191c16d01cfa268e3e3cacde219f3"
-
-[[projects]]
   branch = "master"
   digest = "1:25c00047798cbb2153987b965f3d53fa847513eb03961dc249743d3b4d689dda"
   name = "github.com/katzenpost/noise"
@@ -296,8 +246,8 @@
   revision = "08e83772a9119dc0b35028bc6d8412dc22b0a9ee"
 
 [[projects]]
-  branch = "add_clockwork"
-  digest = "1:fadef619666bf9be04920d2e76c17c307dfdd2c49f84aba3250505258205b87c"
+  branch = "master"
+  digest = "1:6a1caf811281c610c29495b6616d88469b9605512cc182f7ffe3fdf02adb7c65"
   name = "github.com/katzenpost/server"
   packages = [
     ".",
@@ -327,7 +277,7 @@
     "userdb/externuserdb",
   ]
   pruneopts = "UT"
-  revision = "75721c273340d28bba4ab41b2c357f1037007a41"
+  revision = "6bdf01ba559135b27ef6904d5bd0606152b53b83"
 
 [[projects]]
   digest = "1:42eb1f52b84a06820cedc9baec2e710bfbda3ee6dac6cdb97f8b9a5066134ec6"
@@ -362,14 +312,6 @@
   version = "v1.0.0"
 
 [[projects]]
-  branch = "master"
-  digest = "1:c11885edc04a1f70bd6499b23ea024dcb4a4937932c7689d9ddc40c407d32ecf"
-  name = "github.com/siebenmann/smtpd"
-  packages = ["."]
-  pruneopts = "UT"
-  revision = "b93303610bbe1b2cc570daff2de7d77dfac329a0"
-
-[[projects]]
   digest = "1:972c2427413d41a1e06ca4897e8528e5a1622894050e2f527b38ddf0f343f759"
   name = "github.com/stretchr/testify"
   packages = ["assert"]
@@ -387,7 +329,7 @@
 
 [[projects]]
   branch = "master"
-  digest = "1:797ae413db9633eb2017b12e9692fa89fb0b4cb772c6315cb7ae7497945736e8"
+  digest = "1:ce3d1ffbbe252e9e353ece23691250680dc6019f2485acb3e6b1a663a8a0c7c5"
   name = "golang.org/x/crypto"
   packages = [
     "blake2b",
@@ -402,11 +344,11 @@
     "sha3",
   ]
   pruneopts = "UT"
-  revision = "b8fe1690c61389d7d2a8074a507d1d40c5d30448"
+  revision = "7f87c0fbb88b590338857bcb720678c2583d4dea"
 
 [[projects]]
   branch = "master"
-  digest = "1:c69cec04fb82d538ada1b87711ef6d786947fc6b2bf712af8691bcc03eea9843"
+  digest = "1:4512c74e2c934a151fa9246cdc565d29611f53295bfb05e7a6275e80ee540a0c"
   name = "golang.org/x/net"
   packages = [
     "context",
@@ -414,39 +356,30 @@
     "http2",
     "http2/hpack",
     "idna",
-    "internal/socks",
     "internal/timeseries",
-    "proxy",
     "trace",
   ]
   pruneopts = "UT"
-  revision = "d26f9f9a57f3fab6a695bec0d84433c2c50f8bbf"
+  revision = "fe579d43d83210096a79b46dcca0e3721058393a"
 
 [[projects]]
   branch = "master"
-  digest = "1:2a28a611d7589bfcf3a8546464a3e9c8e0702ca62b39cdceaada7d04af8f974a"
+  digest = "1:ad5e62a015226e008f9ca24cdf00d65c74f004f1b247cfa033ca9e3afcf41b29"
   name = "golang.org/x/sys"
   packages = [
     "cpu",
     "unix",
   ]
   pruneopts = "UT"
-  revision = "41f3e6584952bb034a481797859f6ab34b6803bd"
+  revision = "cc5685c2db1239775905f3911f0067c0fa74762f"
 
 [[projects]]
-  digest = "1:4c3c045deaf0ae4d4b14f3abd22bbd322693d1bee1cc59b1e1667fdd3b683e0e"
+  digest = "1:2b43038ba580394ec711455c92dc9c89f3c29ad758136afe6aef01685ef3b557"
   name = "golang.org/x/text"
   packages = [
     "cases",
     "collate",
     "collate/build",
-    "encoding",
-    "encoding/charmap",
-    "encoding/internal",
-    "encoding/internal/identifier",
-    "encoding/japanese",
-    "encoding/simplifiedchinese",
-    "encoding/traditionalchinese",
     "internal",
     "internal/colltab",
     "internal/gen",
@@ -474,7 +407,7 @@
   name = "google.golang.org/genproto"
   packages = ["googleapis/rpc/status"]
   pruneopts = "UT"
-  revision = "4b09977fb92221987e99d190c8f88f2c92727a29"
+  revision = "082222b4a5c572e33e82ee9162d1352c7cf38682"
 
 [[projects]]
   digest = "1:a887a56d0ff92cf05b4bb6004b46fc6e64d3fb6aca4eaeb1466bdce183ba5004"
@@ -556,7 +489,6 @@
   input-imports = [
     "github.com/coreos/bbolt",
     "github.com/hpcloud/tail",
-    "github.com/jonboulle/clockwork",
     "github.com/katzenpost/authority/nonvoting/client",
     "github.com/katzenpost/authority/nonvoting/server",
     "github.com/katzenpost/authority/nonvoting/server/config",
@@ -571,9 +503,6 @@
     "github.com/katzenpost/core/log",
     "github.com/katzenpost/core/pki",
     "github.com/katzenpost/core/thwack",
-    "github.com/katzenpost/mailproxy",
-    "github.com/katzenpost/mailproxy/config",
-    "github.com/katzenpost/mailproxy/event",
     "github.com/katzenpost/server",
     "github.com/katzenpost/server/config",
     "github.com/stretchr/testify/assert",
