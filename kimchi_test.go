@@ -137,3 +137,43 @@ func TestBootstrapVotingThreshold(t *testing.T) {
 	k.Wait()
 	t.Logf("Terminated.")
 }
+
+func TestMultipleVotingRounds(t *testing.T) {
+	assert := assert.New(t)
+	voting := true
+	nVoting := 3
+	nProvider := 2
+	nMix := 6
+	nRounds := uint64(3)
+	k := NewKimchi(basePort+300, "",  voting, nVoting, nProvider, nMix)
+	t.Logf("Running Voting mixnet for %d rounds.", nRounds)
+	k.Run()
+
+	startEpoch, _, _ := epochtime.Now()
+	go func() {
+		defer k.Shutdown()
+		for i:= startEpoch; i < startEpoch+nRounds; i++ {
+			_, _, till := epochtime.Now()
+			// wait until next epoch
+			<-time.After(till + 5 * time.Second) // slop
+			t.Logf("Time is up!")
+
+			// verify that consensus was made for the next epoch
+			p, err := k.pkiClient()
+			if assert.NoError(err) {
+				epoch, _, _ := epochtime.Now()
+				ctx, cancel := context.WithTimeout(context.Background(), time.Second*5)
+				defer cancel()
+				c, _, err := p.Get(ctx, epoch)
+				if assert.NoError(err) {
+					t.Logf("Got a consensus: %v", c)
+				} else {
+					t.Logf("Consensus failed")
+				}
+			}
+		}
+	}()
+
+	k.Wait()
+	t.Logf("Terminated.")
+}
