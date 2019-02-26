@@ -35,7 +35,9 @@ func TestBootstrapNonvoting(t *testing.T) {
 
 	go func() {
 		defer k.Shutdown()
-		<-time.After(1 * time.Minute)
+		_, _, till := epochtime.Now()
+		<-time.After(till)
+
 		t.Logf("Received shutdown request.")
 		p, err := k.pkiClient()
 		if assert.NoError(err) {
@@ -66,7 +68,9 @@ func TestBootstrapVoting(t *testing.T) {
 
 	go func() {
 		defer k.Shutdown()
-		<-time.After(3 * time.Minute)
+		_, _, till := epochtime.Now()
+		till += epochtime.Period // wait for one vote round, aligned at start of epoch
+		<-time.After(till)
 		t.Logf("Time is up!")
 		// verify that consensus was made
 		p, err := k.pkiClient()
@@ -103,12 +107,14 @@ func TestBootstrapVotingThreshold(t *testing.T) {
 		defer k.Shutdown()
 		// Varying this delay will set where in the
 		// voting protocol the authority fails.
-		<-time.After(30 * time.Second)
+		<-time.After(5 * time.Second)
 		t.Logf("Killing an Authority")
 		if !assert.True(k.killAnAuth()) {
 			return
 		}
-		<-time.After(100 * time.Second)
+		_, _, till := epochtime.Now()
+		till += epochtime.Period // wait for one vote round, aligned at start of epoch
+		<-time.After(till)
 		t.Logf("Time is up!")
 		// verify that consensus was made
 		p, err := k.pkiClient()
@@ -133,7 +139,6 @@ func TestBootstrapVotingThreshold(t *testing.T) {
 		}
 	}()
 
-
 	k.Wait()
 	t.Logf("Terminated.")
 }
@@ -149,10 +154,10 @@ func TestMultipleVotingRounds(t *testing.T) {
 	t.Logf("Running Voting mixnet for %d rounds.", nRounds)
 	k.Run()
 
-	startEpoch, _, till := epochtime.Now()
 	go func() {
 		defer k.Shutdown()
 		// align with start of epoch
+		startEpoch, _, till := epochtime.Now()
 		<-time.After(till)
 		for i:= startEpoch+1; i < startEpoch+nRounds; i++ {
 			_, _, till = epochtime.Now()
@@ -160,7 +165,7 @@ func TestMultipleVotingRounds(t *testing.T) {
 			<-time.After(till)
 			t.Logf("Time is up!")
 
-			// verify that consensus was made for the next epoch
+			// verify that consensus was made for the current epoch
 			p, err := k.pkiClient()
 			if assert.NoError(err) {
 				epoch, _, _ := epochtime.Now()
