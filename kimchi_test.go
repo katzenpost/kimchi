@@ -149,13 +149,15 @@ func TestMultipleVotingRounds(t *testing.T) {
 	t.Logf("Running Voting mixnet for %d rounds.", nRounds)
 	k.Run()
 
-	startEpoch, _, _ := epochtime.Now()
+	startEpoch, _, till := epochtime.Now()
 	go func() {
 		defer k.Shutdown()
-		for i:= startEpoch; i < startEpoch+nRounds; i++ {
-			_, _, till := epochtime.Now()
-			// wait until next epoch
-			<-time.After(till + 5 * time.Second) // slop
+		// align with start of epoch
+		<-time.After(till)
+		for i:= startEpoch+1; i < startEpoch+nRounds; i++ {
+			_, _, till = epochtime.Now()
+			// wait until end of epoch
+			<-time.After(till)
 			t.Logf("Time is up!")
 
 			// verify that consensus was made for the next epoch
