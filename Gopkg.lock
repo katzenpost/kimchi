@@ -193,8 +193,8 @@
   version = "v0.1.0"
 
 [[projects]]
-  branch = "fix_random_peer"
-  digest = "1:d859319feb261432e5a530720b11cb1d721fa4542b9ba3226917909f39f08251"
+  branch = "fix_bootstrap_sync"
+  digest = "1:e67c23f9498479756907fab3e67c2e5bfa197aa434e3a8646ac42af90416fc1e"
   name = "github.com/katzenpost/authority"
   packages = [
     "internal/s11n",
@@ -206,7 +206,7 @@
     "voting/server/config",
   ]
   pruneopts = "UT"
-  revision = "7912b83def43d0a203493b687d86c400e4f78fa8"
+  revision = "ec8cab68048fe041ae131952ccbd609da62d4c00"
 
 [[projects]]
   branch = "b64_srv"

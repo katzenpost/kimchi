@@ -12,7 +12,7 @@ required = ["github.com/coreos/bbolt"]
   name = "github.com/katzenpost/core"
 
 [[constraint]]
-  branch = "fix_random_peer"
+  branch = "fix_bootstrap_sync"
   name = "github.com/katzenpost/authority"
 
 [[override]]
