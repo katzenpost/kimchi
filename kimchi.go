@@ -27,6 +27,7 @@ import (
 	"os"
 	"path/filepath"
 	"sync"
+	"time"
 
 	"github.com/hpcloud/tail"
 	vClient "github.com/katzenpost/authority/voting/client"
@@ -575,4 +576,37 @@ func (k *kimchi) Shutdown() {
 	}
 	k.Wait()
 	log.Printf("Terminated.")
+}
+
+func (k *kimchi) runWithDelayedAuthority(delay time.Duration) {
+	// Launch all the nodes.
+	for _, v := range k.nodeConfigs {
+		v.FixupAndValidate()
+		svr, err := nServer.New(v)
+		if err != nil {
+			log.Fatalf("Failed to launch node: %v", err)
+		}
+
+		k.servers = append(k.servers, svr)
+		go k.logTailer(v.Server.Identifier, filepath.Join(v.Server.DataDir, v.Logging.File))
+	}
+
+	f := func(vCfg *vConfig.Config) {
+		vCfg.FixupAndValidate()
+		server, err := vServer.New(vCfg)
+		if err != nil {
+			return
+		}
+		go k.logTailer(vCfg.Authority.Identifier, filepath.Join(vCfg.Authority.DataDir, vCfg.Logging.File))
+		k.servers = append(k.servers, server)
+	}
+
+	for _, vCfg := range k.votingAuthConfigs[:len(k.votingAuthConfigs)-1] {
+		f(vCfg)
+	}
+	go func() {
+		// delay starting the last authority from another routine
+		<-time.After(delay)
+		f(k.votingAuthConfigs[len(k.votingAuthConfigs)-1])
+	}()
 }

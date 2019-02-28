@@ -184,3 +184,54 @@ func TestMultipleVotingRounds(t *testing.T) {
 	k.Wait()
 	t.Logf("Terminated.")
 }
+
+func TestAuthorityJoinConsensus(t *testing.T) {
+	assert := assert.New(t)
+	voting := true
+	nVoting := 3
+	nProvider := 2
+	nMix := 6
+	nRounds := uint64(3)
+	k := NewKimchi(basePort+400, "", voting, nVoting, nProvider, nMix)
+	t.Logf("Running Voting mixnet for %d rounds.", nRounds)
+	delay := epochtime.Period // miss the first voting round
+	k.runWithDelayedAuthority(delay)
+	go func() {
+		defer k.Shutdown()
+		// align with start of epoch
+		startEpoch, _, till := epochtime.Now()
+		<-time.After(till)
+		for i := startEpoch + 1; i < startEpoch+nRounds; i++ {
+			_, _, till = epochtime.Now()
+			// wait until end of epoch
+			<-time.After(till)
+			t.Logf("Time is up!")
+
+			// verify that consensus was made for the current epoch
+			p, err := k.pkiClient()
+			if assert.NoError(err) {
+				epoch, _, _ := epochtime.Now()
+				ctx, cancel := context.WithTimeout(context.Background(), time.Second*5)
+				defer cancel()
+				c, r, err := p.Get(ctx, epoch)
+				if assert.NoError(err) {
+					t.Logf("Got a consensus: %v", c)
+					s, err := cert.GetSignatures(r)
+					if assert.NoError(err) {
+						// Confirm full consensus was made in final round
+						if i == startEpoch+nRounds-1 {
+							if assert.Equal(nVoting, len(s)) {
+								t.Logf("%d Signatures found on consensus as expected", nVoting)
+							} else {
+								t.Logf("Found %d signatures, expected %d", len(s), nVoting)
+							}
+						}
+					}
+				}
+			}
+		}
+	}()
+
+	k.Wait()
+	t.Logf("Terminated.")
+}
