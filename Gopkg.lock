@@ -194,7 +194,7 @@
 
 [[projects]]
   branch = "fix_bootstrap_sync"
-  digest = "1:fb8ee43df9590c09dc88f806760303903172061ee5cacd089d44fce1860ae153"
+  digest = "1:3295cd7bfbf61f387e2400dfa0dc748e9071a216ff03b6706cc3ecc72f1c8a54"
   name = "github.com/katzenpost/authority"
   packages = [
     "internal/s11n",
@@ -206,11 +206,11 @@
     "voting/server/config",
   ]
   pruneopts = "UT"
-  revision = "36b6388dc7db7c22e686fa9ace062a132b56e1cf"
+  revision = "987770b3024cad85a0e6078dc4d504e58a1d6571"
 
 [[projects]]
-  branch = "b64_srv"
-  digest = "1:2af0abcb584f5b015b3ddd0ccbde3fafd8598199b4566793099da21d6b33d32d"
+  branch = "add_warped_epoch_flag"
+  digest = "1:59f307d731d85c3969c925cc7371fc53ee231992eabbeeda426555d728895823"
   name = "github.com/katzenpost/core"
   packages = [
     "constants",
@@ -235,7 +235,7 @@
     "worker",
   ]
   pruneopts = "UT"
-  revision = "f2c0b23c98e8a9d4698507a0ef11aeca26441746"
+  revision = "ebc5821a512ef0519a0c3214096d31ded5af8da1"
 
 [[projects]]
   branch = "master"
@@ -246,8 +246,8 @@
   revision = "08e83772a9119dc0b35028bc6d8412dc22b0a9ee"
 
 [[projects]]
-  branch = "master"
-  digest = "1:6a1caf811281c610c29495b6616d88469b9605512cc182f7ffe3fdf02adb7c65"
+  branch = "add_warped_epoch_flag"
+  digest = "1:0ea296c2554ce4603f7408ab3fccf7e86d698336f9eb64ae43bfe4f843167d82"
   name = "github.com/katzenpost/server"
   packages = [
     ".",
@@ -277,7 +277,7 @@
     "userdb/externuserdb",
   ]
   pruneopts = "UT"
-  revision = "6bdf01ba559135b27ef6904d5bd0606152b53b83"
+  revision = "4bdd3b5429b9c66ed6486a76a945db85c3c45d61"
 
 [[projects]]
   digest = "1:42eb1f52b84a06820cedc9baec2e710bfbda3ee6dac6cdb97f8b9a5066134ec6"
@@ -329,7 +329,7 @@
 
 [[projects]]
   branch = "master"
-  digest = "1:ce3d1ffbbe252e9e353ece23691250680dc6019f2485acb3e6b1a663a8a0c7c5"
+  digest = "1:ed12b4dca87aec5f2344bf0b226728e3e30fac18be0b978fd6532cd68c513ace"
   name = "golang.org/x/crypto"
   packages = [
     "blake2b",
@@ -344,7 +344,7 @@
     "sha3",
   ]
   pruneopts = "UT"
-  revision = "31a38585487a4b1fd6ff4f8f3db26f1fb296ac82"
+  revision = "8dd112bcdc25174059e45e07517d9fc663123347"
 
 [[projects]]
   branch = "master"
@@ -360,18 +360,18 @@
     "trace",
   ]
   pruneopts = "UT"
-  revision = "c95aed5357e77a4bf7d3955c46740000a17adee1"
+  revision = "92fc7df08ae7536330f5a21328292abfa70520a8"
 
 [[projects]]
   branch = "master"
-  digest = "1:ad5e62a015226e008f9ca24cdf00d65c74f004f1b247cfa033ca9e3afcf41b29"
+  digest = "1:9d1657fbbef403ab54f7eb39278a787f35536ef37f7c2a0775f49ea3356d5076"
   name = "golang.org/x/sys"
   packages = [
     "cpu",
     "unix",
   ]
   pruneopts = "UT"
-  revision = "775f8194d0f9e65c46913c7be783d3d95a29333c"
+  revision = "a34e9553db1e492c9a76e60db2296ae7e5fbb772"
 
 [[projects]]
   digest = "1:2b43038ba580394ec711455c92dc9c89f3c29ad758136afe6aef01685ef3b557"

@@ -8,7 +8,7 @@ required = ["github.com/coreos/bbolt"]
   name = "github.com/coreos/bbolt"
 
 [[constraint]]
-  branch = "b64_srv"
+  branch = "add_warped_epoch_flag"
   name = "github.com/katzenpost/core"
 
 [[constraint]]
@@ -20,7 +20,7 @@ required = ["github.com/coreos/bbolt"]
   name = "github.com/katzenpost/minclient"
 
 [[override]]
-  branch = "master"
+  branch = "add_warped_epoch_flag"
   name = "github.com/katzenpost/server"
 
 # other stuff
