@@ -4,6 +4,7 @@ import (
 	"context"
 	"testing"
 	"time"
+	"path/filepath"
 
 	aServer "github.com/katzenpost/authority/voting/server"
 	"github.com/katzenpost/core/crypto/cert"
@@ -261,6 +262,8 @@ func TestClientConnect(t *testing.T) {
 		// instantiate a client instance
 		c, err := cClient.New(cfg)
 		assert.NoError(err)
+
+		go k.logTailer(cfg.Account.User, filepath.Join(cfg.Proxy.DataDir, cfg.Logging.File))
 
 		// instantiate a session
 		s, err := c.NewSession()
