@@ -7,6 +7,7 @@ import (
 
 	aServer "github.com/katzenpost/authority/voting/server"
 	"github.com/katzenpost/core/crypto/cert"
+	cClient "github.com/katzenpost/client"
 	"github.com/katzenpost/core/epochtime"
 	"github.com/stretchr/testify/assert"
 )
@@ -230,6 +231,53 @@ func TestAuthorityJoinConsensus(t *testing.T) {
 				}
 			}
 		}
+	}()
+
+	k.Wait()
+	t.Logf("Terminated.")
+}
+
+func TestClientConnect(t *testing.T) {
+	assert := assert.New(t)
+	voting := true
+	nVoting := 3
+	nProvider := 2
+	nMix := 6
+	k := NewKimchi(basePort+500, "",  voting, nVoting, nProvider, nMix)
+	t.Logf("Running TestClientConnect.")
+	k.Run()
+
+	go func() {
+		defer k.Shutdown()
+		_, _, till := epochtime.Now()
+		till += epochtime.Period // wait for one vote round, aligned at start of epoch
+		<-time.After(till)
+		t.Logf("Time is up!")
+
+		// create a client configuration
+		cfg, err := k.getClientConfig()
+		assert.NoError(err)
+
+		// instantiate a client instance
+		c, err := cClient.New(cfg)
+		assert.NoError(err)
+
+		// instantiate a session
+		s, err := c.NewSession()
+		assert.NoError(err)
+
+		// get a PKI document? needs client method...
+		desc, err := s.GetService("loop") // XXX: returns nil and no error?!
+		assert.NoError(err)
+
+		// send a message
+		t.Logf("desc.Provider: %s", desc.Provider)
+		surb, err := s.SendUnreliableQuery(desc.Name, desc.Provider, []byte("hello!"))
+		assert.NoError(err)
+
+		// block and wait for a reply
+		r := s.WaitForReply(surb)
+		t.Logf("Got reply: %s", r)
 	}()
 
 	k.Wait()

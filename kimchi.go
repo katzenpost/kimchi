@@ -36,6 +36,7 @@ import (
 	nvClient "github.com/katzenpost/authority/nonvoting/client"
 	aServer "github.com/katzenpost/authority/nonvoting/server"
 	aConfig "github.com/katzenpost/authority/nonvoting/server/config"
+	cConfig "github.com/katzenpost/client/config"
 	"github.com/katzenpost/core/crypto/ecdh"
 	"github.com/katzenpost/core/crypto/eddsa"
 	"github.com/katzenpost/core/crypto/rand"
@@ -609,4 +610,68 @@ func (k *kimchi) runWithDelayedAuthority(delay time.Duration) {
 		<-time.After(delay)
 		f(k.votingAuthConfigs[len(k.votingAuthConfigs)-1])
 	}()
+}
+
+func (k *kimchi) getClientConfig() (*cConfig.Config, error) {
+	cfg := new(cConfig.Config)
+	m := rand.NewMath()
+	cfg.Proxy = &cConfig.Proxy{DataDir: filepath.Join(k.baseDir, fmt.Sprintf("client%d", m.Intn(1<<32)))}
+	if err := os.Mkdir(cfg.Proxy.DataDir, 0700); err != nil {
+		return nil, err
+	}
+	cfg.Logging = &cConfig.Logging{
+		Disable: false,
+		File: "katzenpost.log",
+		Level: "DEBUG",
+	}
+	cfg.UpstreamProxy = &cConfig.UpstreamProxy{Type: "none"}
+	cfg.Debug = &cConfig.Debug{}
+
+	// authority section
+	if k.voting {
+		p, err := sConfig.AuthorityPeersFromPeers(k.votingPeers())
+		if err != nil {
+			return nil, err
+		}
+		cfg.VotingAuthority = &cConfig.VotingAuthority{
+			Peers: p,
+		}
+	} else {
+		cfg.NonvotingAuthority = &cConfig.NonvotingAuthority{
+			Address: k.authConfig.Authority.Addresses[0],
+			PublicKey: k.authIdentity.PublicKey(),
+		}
+	}
+
+	cfg.Account = &cConfig.Account{}
+
+	// select a username for the user
+	usernames := []string{"alice", "bob", "mallory"}
+	cfg.Account.User = fmt.Sprintf("%s%d", usernames[m.Intn(len(usernames))], m.Intn(255))
+
+	// find a provider
+	for _, nCfg := range k.nodeConfigs {
+		if nCfg.Server.IsProvider {
+			cfg.Account.Provider = nCfg.Server.Identifier
+			cfg.Account.ProviderKeyPin = nCfg.Debug.IdentityKey.PublicKey()
+
+			// Generate keys for the account
+			if err := cConfig.GenerateKeys(cfg); err != nil {
+				return nil, err
+			}
+			if err := cfg.FixupAndValidate(); err != nil {
+				return nil, err
+			}
+
+			// register the account on the provider
+			id := cfg.Account.User + "@" + nCfg.Server.Identifier
+			if linkKey, err := cConfig.LoadLinkKey(filepath.Join(cfg.Proxy.DataDir, id)); err != nil {
+				return nil, err
+			} else if err := k.thwackUser(nCfg, cfg.Account.User, linkKey.PublicKey()); err != nil {
+				return nil, err
+			}
+			return cfg, nil
+		}
+	}
+	return nil, errors.New("No providers found!")
 }
