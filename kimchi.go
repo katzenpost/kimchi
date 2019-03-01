@@ -231,12 +231,7 @@ func (k *kimchi) initLogging() error {
 }
 
 func (k *kimchi) genVotingAuthoritiesCfg() error {
-	parameters := &vConfig.Parameters{
-		MixLambda:       1,
-		MixMaxDelay:     10000,
-		SendLambda:      123,
-		SendMaxInterval: 123456,
-	}
+	parameters := &vConfig.Parameters{}
 	configs := []*vConfig.Config{}
 
 	// initial generation of key material for each authority
