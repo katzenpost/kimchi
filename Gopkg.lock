@@ -256,11 +256,11 @@
 
 [[projects]]
   branch = "add_warped_epoch_flag"
-  digest = "1:01c0842a664e55ee66f80f56565617d2e90957cafb3ae31f1f62bf18d1e220bd"
+  digest = "1:4b5724e4794fea267f7e72666fa7a9a208b4b05fb1cc0df60922d608328e428e"
   name = "github.com/katzenpost/minclient"
   packages = ["."]
   pruneopts = "UT"
-  revision = "6baa27ad7d824d10432d4b597c5c59ba1b12712c"
+  revision = "fe92f7198fa0fd50c79ae0eb341f33da229dea2a"
 
 [[projects]]
   branch = "master"
@@ -387,18 +387,18 @@
     "trace",
   ]
   pruneopts = "UT"
-  revision = "92fc7df08ae7536330f5a21328292abfa70520a8"
+  revision = "16b79f2e4e95ea23b2bf9903c9809ff7b013ce85"
 
 [[projects]]
   branch = "master"
-  digest = "1:9d1657fbbef403ab54f7eb39278a787f35536ef37f7c2a0775f49ea3356d5076"
+  digest = "1:27466d85b880c670fca9f18ee19336ee3a59784e414d866ff0671656e0de03b9"
   name = "golang.org/x/sys"
   packages = [
     "cpu",
     "unix",
   ]
   pruneopts = "UT"
-  revision = "a34e9553db1e492c9a76e60db2296ae7e5fbb772"
+  revision = "c2f5717e611cf8e89a852a41081355194d80c943"
 
 [[projects]]
   digest = "1:2b43038ba580394ec711455c92dc9c89f3c29ad758136afe6aef01685ef3b557"
