@@ -289,3 +289,51 @@ func TestClientConnect(t *testing.T) {
 	k.Wait()
 	t.Logf("Terminated.")
 }
+
+func TestClientReceiveMessage(t *testing.T) {
+	assert := assert.New(t)
+	voting := true
+	nVoting := 3
+	nProvider := 2
+	nMix := 3
+	k := NewKimchi(basePort+600, "",  voting, nVoting, nProvider, nMix)
+	t.Logf("Running TestClientConnect.")
+	k.Run()
+
+	go func() {
+		defer k.Shutdown()
+		_, _, till := epochtime.Now()
+		// XXX; there seems to be a bug w/ messages getting dropped @ epoch transition
+		till += epochtime.Period + 10 * time.Second // wait for one vote round, aligned at start of epoch + slop
+		<-time.After(till)
+		t.Logf("Time is up!")
+
+		// create a client configuration
+		cfg, err := k.getClientConfig()
+		assert.NoError(err)
+
+		// instantiate a client instance
+		c, err := cClient.New(cfg)
+		assert.NoError(err)
+		assert.NotNil(c)
+
+		// add client log output
+		go k.logTailer(cfg.Account.User, filepath.Join(cfg.Proxy.DataDir, cfg.Logging.File))
+
+		// instantiate a session
+		s, err := c.NewSession()
+		assert.NoError(err)
+
+		// send a message
+		surb, err := s.SendUnreliableQuery(cfg.Account.User, cfg.Account.Provider, []byte("hello!"))
+		assert.NoError(err)
+
+		// block and wait for a reply. XXX: may  hang if message was dropped
+		r := s.WaitForReply(surb)
+		t.Logf("Got reply: %s", r)
+		c.Shutdown()
+		c.Wait()
+	}()
+	k.Wait()
+	t.Logf("Terminated.")
+}
