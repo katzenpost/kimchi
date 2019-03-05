@@ -263,6 +263,7 @@ func TestClientConnect(t *testing.T) {
 		c, err := cClient.New(cfg)
 		assert.NoError(err)
 
+		// add client log output
 		go k.logTailer(cfg.Account.User, filepath.Join(cfg.Proxy.DataDir, cfg.Logging.File))
 
 		// instantiate a session
@@ -281,6 +282,8 @@ func TestClientConnect(t *testing.T) {
 		// block and wait for a reply
 		r := s.WaitForReply(surb)
 		t.Logf("Got reply: %s", r)
+		c.Shutdown()
+		c.Wait()
 	}()
 
 	k.Wait()
