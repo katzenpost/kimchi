@@ -8,11 +8,11 @@ required = ["github.com/coreos/bbolt"]
   name = "github.com/coreos/bbolt"
 
 [[constraint]]
-  branch = "add_warped_epoch_flag"
+  revision = "44c4f4049a4317a1d5a83b43a3766cce46e6083a"
   name = "github.com/katzenpost/core"
 
 [[constraint]]
-  branch = "fix_bootstrap_sync"
+  revision = "b4f2f222ebdc32b0ae62b2e0a97d5b1635f93702"
   name = "github.com/katzenpost/authority"
 
 [[override]]

@@ -129,12 +129,12 @@
   version = "v1.3.0"
 
 [[projects]]
-  digest = "1:2fea68d1a506e91f177579597a6a4d13d460d288e9f7948ce9d717fe77eaedcc"
+  digest = "1:f6ecb0dc7d965d75815729fd300cc0cd17004fb2d6172a7f37192494936942e5"
   name = "github.com/hashicorp/go-hclog"
   packages = ["."]
   pruneopts = "UT"
-  revision = "90f2fbc4844c54471c74c1395e1d06ce0582ec59"
-  version = "v0.7.0"
+  revision = "6907afbebd2eef854f0be9194eb79b0ba75d7b29"
+  version = "v0.8.0"
 
 [[projects]]
   branch = "master"
@@ -185,16 +185,7 @@
   version = "v3.3.0"
 
 [[projects]]
-  digest = "1:75ab90ae3f5d876167e60f493beadfe66f0ed861a710f283fb06c86437a09538"
-  name = "github.com/jonboulle/clockwork"
-  packages = ["."]
-  pruneopts = "UT"
-  revision = "2eee05ed794112d45db504eb05aa693efd2b8b09"
-  version = "v0.1.0"
-
-[[projects]]
-  branch = "fix_bootstrap_sync"
-  digest = "1:3295cd7bfbf61f387e2400dfa0dc748e9071a216ff03b6706cc3ecc72f1c8a54"
+  digest = "1:1e3a48a6725d43392edaec23d2cfbf08b810aa62ecd03c9733e41bc3f607a868"
   name = "github.com/katzenpost/authority"
   packages = [
     "internal/s11n",
@@ -206,7 +197,7 @@
     "voting/server/config",
   ]
   pruneopts = "UT"
-  revision = "987770b3024cad85a0e6078dc4d504e58a1d6571"
+  revision = "b4f2f222ebdc32b0ae62b2e0a97d5b1635f93702"
 
 [[projects]]
   digest = "1:ce980b503ef009299fd52d5a7f574b7130e3467344c4b9df6f72a6fcf24c4658"
@@ -226,8 +217,7 @@
   version = "0.0.0"
 
 [[projects]]
-  branch = "add_warped_epoch_flag"
-  digest = "1:59f307d731d85c3969c925cc7371fc53ee231992eabbeeda426555d728895823"
+  digest = "1:5b27c4cc159869380e66d53c11bdd98edcfc4151a68bf7e2246739bab97e3f66"
   name = "github.com/katzenpost/core"
   packages = [
     "constants",
@@ -252,7 +242,7 @@
     "worker",
   ]
   pruneopts = "UT"
-  revision = "ebc5821a512ef0519a0c3214096d31ded5af8da1"
+  revision = "44c4f4049a4317a1d5a83b43a3766cce46e6083a"
 
 [[projects]]
   branch = "add_warped_epoch_flag"
@@ -391,14 +381,14 @@
 
 [[projects]]
   branch = "master"
-  digest = "1:27466d85b880c670fca9f18ee19336ee3a59784e414d866ff0671656e0de03b9"
+  digest = "1:394fc8dcc8112869c316975bff3b4d2309a8f3e457b391cb353fbd5827c31591"
   name = "golang.org/x/sys"
   packages = [
     "cpu",
     "unix",
   ]
   pruneopts = "UT"
-  revision = "c2f5717e611cf8e89a852a41081355194d80c943"
+  revision = "b294cbcfc56d2a65a30c02c78722b5df061e99b8"
 
 [[projects]]
   digest = "1:2b43038ba580394ec711455c92dc9c89f3c29ad758136afe6aef01685ef3b557"
@@ -434,7 +424,7 @@
   name = "google.golang.org/genproto"
   packages = ["googleapis/rpc/status"]
   pruneopts = "UT"
-  revision = "4f5b463f9597cbe0dd13a6a2cd4f85e788d27508"
+  revision = "6e86cb5d2f12401bdd82a5eccbd701b5a697e63e"
 
 [[projects]]
   digest = "1:5b600bdd0f5f37f1cfb03d98b512414d8900263efb7e1c0f22297d4f118fb9ab"
