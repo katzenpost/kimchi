@@ -50,7 +50,7 @@ func TestBootstrapNonvoting(t *testing.T) {
 	go func() {
 		defer k.Shutdown()
 		_, _, till := epochtime.Now()
-		<-time.After(till)
+		<-time.After(till + epochtime.Period)
 
 		t.Logf("Received shutdown request.")
 		p, err := k.pkiClient()
