@@ -326,7 +326,7 @@ func (k *kimchi) genNodeConfig(isProvider bool, isVoting bool) error {
 
 	// Server section.
 	cfg.Server = new(sConfig.Server)
-	cfg.Server.Identifier = fmt.Sprintf("%s.eXaMpLe.org", n)
+	cfg.Server.Identifier = n
 	cfg.Server.Addresses = []string{fmt.Sprintf("127.0.0.1:%d", k.lastPort)}
 	cfg.Server.DataDir = filepath.Join(k.baseDir, n)
 	cfg.Server.IsProvider = isProvider
