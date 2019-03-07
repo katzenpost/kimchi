@@ -137,19 +137,24 @@ func TestBootstrapVotingThreshold(t *testing.T) {
 			ctx, cancel := context.WithTimeout(context.Background(), time.Second*5)
 			defer cancel()
 			t.Logf("Fetching a consensus")
-			c, r, err := p.Get(ctx, epoch)
-			if assert.NoError(err) {
-				t.Logf("Got a consensus: %v", c)
-				s, err := cert.GetSignatures(r)
-				if assert.NoError(err) {
-					// Confirm exactly 2 signatures are present.
-					if assert.Equal(2, len(s)) {
-						t.Logf("2 Signatures found on consensus as expected")
-					} else {
-						t.Logf("Found %d signatures, expected 2", len(s))
+			// pkiClient doesn't retry for us, yet
+			for i:=0; i<3; i++ {
+				c, r, err := p.Get(ctx, epoch)
+				if err == nil {
+					t.Logf("Got a consensus: %v", c)
+					s, err := cert.GetSignatures(r)
+					if assert.NoError(err) {
+						// Confirm exactly 2 signatures are present.
+						if assert.Equal(2, len(s)) {
+							t.Logf("2 Signatures found on consensus as expected")
+						} else {
+							t.Logf("Found %d signatures, expected 2", len(s))
+						}
 					}
+					return
 				}
 			}
+			assert.Fail("Failed to fetch a consensus")
 		}
 	}()
 
