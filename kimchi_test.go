@@ -7,6 +7,7 @@ import (
 	"path/filepath"
 
 	aServer "github.com/katzenpost/authority/voting/server"
+	sServer "github.com/katzenpost/server"
 	"github.com/katzenpost/core/crypto/cert"
 	cClient "github.com/katzenpost/client"
 	"github.com/katzenpost/core/epochtime"
@@ -18,6 +19,17 @@ func (k *kimchi) killAnAuth() bool {
 	for _, svr := range k.servers {
 		switch svr.(type) {
 		case *aServer.Server:
+			svr.Shutdown()
+			return true
+		}
+	}
+	return false
+}
+// Shutdown a mix
+func (k *kimchi) killAMix() bool {
+	for _, svr := range k.servers {
+		switch svr.(type) {
+		case *sServer.Server:
 			svr.Shutdown()
 			return true
 		}
@@ -334,6 +346,53 @@ func TestClientReceiveMessage(t *testing.T) {
 		c.Shutdown()
 		c.Wait()
 	}()
+	k.Wait()
+	t.Logf("Terminated.")
+}
+
+func TestTopologyChange(t *testing.T) {
+	assert := assert.New(t)
+	voting := true
+	nVoting := 3
+	nProvider := 2
+	nMix := 3
+	nRounds := uint64(5)
+	k := NewKimchi(basePort+300, "",  voting, nVoting, nProvider, nMix)
+	t.Logf("Running Voting mixnet for %d rounds.", nRounds)
+	k.Run()
+
+	go func() {
+		defer k.Shutdown()
+		// align with start of epoch
+		startEpoch, _, till := epochtime.Now()
+		<-time.After(till)
+		for i:= startEpoch+1; i < startEpoch+nRounds; i++ {
+			_, _, till = epochtime.Now()
+			// wait until end of epoch
+			<-time.After(till)
+			t.Logf("Time is up!")
+
+			// verify that consensus was made for the current epoch
+			p, err := k.pkiClient()
+			if assert.NoError(err) {
+				epoch, _, _ := epochtime.Now()
+				ctx, cancel := context.WithTimeout(context.Background(), time.Second*5)
+				defer cancel()
+				c, _, err := p.Get(ctx, epoch)
+				if assert.NoError(err) {
+					t.Logf("Got a consensus: %v", c)
+				} else {
+					t.Logf("Consensus failed")
+				}
+			}
+
+			// kill 1 mix and verify topology rebalances uniformly
+			if i == startEpoch+2 {
+				assert.True(k.killAMix())
+			}
+		}
+	}()
+
 	k.Wait()
 	t.Logf("Terminated.")
 }
