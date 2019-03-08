@@ -288,7 +288,7 @@ func TestClientConnect(t *testing.T) {
 			ch <-s.WaitForReply(surb)
 		}()
 		select {
-		case <-time.After(1 * time.Minute):
+		case <-time.After(epochtime.Period):
 			assert.Fail("Timed out, no reply received")
 		case r := <-ch:
 			t.Logf("Got reply: %s", r)
@@ -346,7 +346,7 @@ func TestClientReceiveMessage(t *testing.T) {
 			ch <-s.WaitForReply(surb)
 		}()
 		select {
-		case <-time.After(1 * time.Minute):
+		case <-time.After(epochtime.Period):
 			assert.Fail("Timed out, no reply received")
 		case r := <-ch:
 			t.Logf("Got reply: %s", r)
