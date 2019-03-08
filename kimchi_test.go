@@ -134,27 +134,17 @@ func TestBootstrapVotingThreshold(t *testing.T) {
 		p, err := k.pkiClient()
 		if assert.NoError(err) {
 			epoch, _, _ := epochtime.Now()
-			ctx, cancel := context.WithTimeout(context.Background(), time.Second*5)
-			defer cancel()
-			t.Logf("Fetching a consensus")
-			// pkiClient doesn't retry for us, yet
-			for i:=0; i<3; i++ {
-				c, r, err := p.Get(ctx, epoch)
-				if err == nil {
-					t.Logf("Got a consensus: %v", c)
-					s, err := cert.GetSignatures(r)
-					if assert.NoError(err) {
-						// Confirm exactly 2 signatures are present.
-						if assert.Equal(2, len(s)) {
-							t.Logf("2 Signatures found on consensus as expected")
-						} else {
-							t.Logf("Found %d signatures, expected 2", len(s))
-						}
-					}
-					return
+			r, err := retry(p, epoch, 3)
+			assert.NoError(err)
+			s, err := cert.GetSignatures(r)
+			if assert.NoError(err) {
+				// Confirm exactly 2 signatures are present.
+				if assert.Equal(2, len(s)) {
+					t.Logf("2 Signatures found on consensus as expected")
+				} else {
+					t.Logf("Found %d signatures, expected 2", len(s))
 				}
 			}
-			assert.Fail("Failed to fetch a consensus")
 		}
 	}()
 
@@ -226,26 +216,21 @@ func TestAuthorityJoinConsensus(t *testing.T) {
 			<-time.After(till)
 			t.Logf("Time is up!")
 
-			// verify that consensus was made for the current epoch
+			// verify that consensus was made for each epoch
 			p, err := k.pkiClient()
-			if assert.NoError(err) {
-				epoch, _, _ := epochtime.Now()
-				ctx, cancel := context.WithTimeout(context.Background(), time.Second*5)
-				defer cancel()
-				c, r, err := p.Get(ctx, epoch)
-				if assert.NoError(err) {
-					t.Logf("Got a consensus: %v", c)
-					s, err := cert.GetSignatures(r)
-					if assert.NoError(err) {
-						// Confirm full consensus was made in final round
-						if i == startEpoch+nRounds-1 {
-							if assert.Equal(nVoting, len(s)) {
-								t.Logf("%d Signatures found on consensus as expected", nVoting)
-							} else {
-								t.Logf("Found %d signatures, expected %d", len(s), nVoting)
-							}
-						}
-					}
+			assert.NoError(err)
+			epoch, _, _ := epochtime.Now()
+			r, err := retry(p, epoch, 3)
+			assert.NoError(err)
+			s, err := cert.GetSignatures(r)
+			assert.NoError(err)
+
+			// check that we obtained a fully signed consensus in the final round
+			if i == startEpoch+nRounds-1 {
+				if assert.Equal(nVoting, len(s)) {
+					t.Logf("%d Signatures found on consensus as expected", nVoting)
+				} else {
+					t.Logf("Found %d signatures, expected %d", len(s), nVoting)
 				}
 			}
 		}

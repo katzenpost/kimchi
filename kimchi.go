@@ -18,6 +18,7 @@ package kimchi
 
 import (
 	"bytes"
+	"context"
 	"errors"
 	"fmt"
 	"io"
@@ -670,3 +671,17 @@ func (k *kimchi) getClientConfig() (*cConfig.Config, error) {
 	}
 	return nil, errors.New("No providers found!")
 }
+
+func retry(p pki.Client, epoch uint64, retries int) (reply []byte, err error) {
+
+	ctx, cancel := context.WithTimeout(context.Background(), time.Second*5)
+	defer cancel()
+	for i:=0; i<retries; i++ {
+		_, reply, err = p.Get(ctx, epoch)
+		if err == nil {
+			return
+		}
+	}
+	return
+}
+
