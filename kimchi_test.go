@@ -2,15 +2,15 @@ package kimchi
 
 import (
 	"context"
+	"path/filepath"
 	"testing"
 	"time"
-	"path/filepath"
 
 	aServer "github.com/katzenpost/authority/voting/server"
-	sServer "github.com/katzenpost/server"
-	"github.com/katzenpost/core/crypto/cert"
 	cClient "github.com/katzenpost/client"
+	"github.com/katzenpost/core/crypto/cert"
 	"github.com/katzenpost/core/epochtime"
+	sServer "github.com/katzenpost/server"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -25,6 +25,7 @@ func (k *kimchi) killAnAuth() bool {
 	}
 	return false
 }
+
 // Shutdown a mix
 func (k *kimchi) killAMix() bool {
 	for _, svr := range k.servers {
@@ -43,7 +44,7 @@ func TestBootstrapNonvoting(t *testing.T) {
 	nVoting := 0
 	nProvider := 2
 	nMix := 6
-	k := NewKimchi(basePort+50, "",  voting, nVoting, nProvider, nMix)
+	k := NewKimchi(basePort+50, "", voting, nVoting, nProvider, nMix)
 	t.Logf("Running Bootstrap Nonvoting mixnet.")
 	k.Run()
 
@@ -76,7 +77,7 @@ func TestBootstrapVoting(t *testing.T) {
 	nVoting := 3
 	nProvider := 2
 	nMix := 6
-	k := NewKimchi(basePort+100, "",  voting, nVoting, nProvider, nMix)
+	k := NewKimchi(basePort+100, "", voting, nVoting, nProvider, nMix)
 	t.Logf("Running Bootstrap Voting mixnet.")
 	k.Run()
 
@@ -111,7 +112,7 @@ func TestBootstrapVotingThreshold(t *testing.T) {
 	nVoting := 3
 	nProvider := 2
 	nMix := 6
-	k := NewKimchi(basePort, "",  voting, nVoting, nProvider, nMix)
+	k := NewKimchi(basePort, "", voting, nVoting, nProvider, nMix)
 	t.Logf("Running Bootstrap Voting mixnet.")
 	k.Run()
 
@@ -159,7 +160,7 @@ func TestMultipleVotingRounds(t *testing.T) {
 	nProvider := 2
 	nMix := 6
 	nRounds := uint64(3)
-	k := NewKimchi(basePort+300, "",  voting, nVoting, nProvider, nMix)
+	k := NewKimchi(basePort+300, "", voting, nVoting, nProvider, nMix)
 	t.Logf("Running Voting mixnet for %d rounds.", nRounds)
 	k.Run()
 
@@ -168,7 +169,7 @@ func TestMultipleVotingRounds(t *testing.T) {
 		// align with start of epoch
 		startEpoch, _, till := epochtime.Now()
 		<-time.After(till)
-		for i:= startEpoch+1; i < startEpoch+nRounds; i++ {
+		for i := startEpoch + 1; i < startEpoch+nRounds; i++ {
 			_, _, till = epochtime.Now()
 			// wait until end of epoch
 			<-time.After(till)
@@ -246,7 +247,7 @@ func TestClientConnect(t *testing.T) {
 	nVoting := 3
 	nProvider := 2
 	nMix := 6
-	k := NewKimchi(basePort+500, "",  voting, nVoting, nProvider, nMix)
+	k := NewKimchi(basePort+500, "", voting, nVoting, nProvider, nMix)
 	t.Logf("Running TestClientConnect.")
 	k.Run()
 
@@ -298,7 +299,7 @@ func TestClientReceiveMessage(t *testing.T) {
 	nVoting := 3
 	nProvider := 2
 	nMix := 3
-	k := NewKimchi(basePort+600, "",  voting, nVoting, nProvider, nMix)
+	k := NewKimchi(basePort+600, "", voting, nVoting, nProvider, nMix)
 	t.Logf("Running TestClientConnect.")
 	k.Run()
 
@@ -306,7 +307,7 @@ func TestClientReceiveMessage(t *testing.T) {
 		defer k.Shutdown()
 		_, _, till := epochtime.Now()
 		// XXX; there seems to be a bug w/ messages getting dropped @ epoch transition
-		till += epochtime.Period + 10 * time.Second // wait for one vote round, aligned at start of epoch + slop
+		till += epochtime.Period + 10*time.Second // wait for one vote round, aligned at start of epoch + slop
 		<-time.After(till)
 		t.Logf("Time is up!")
 
@@ -347,7 +348,7 @@ func TestTopologyChange(t *testing.T) {
 	nProvider := 2
 	nMix := 3
 	nRounds := uint64(5)
-	k := NewKimchi(basePort+300, "",  voting, nVoting, nProvider, nMix)
+	k := NewKimchi(basePort+300, "", voting, nVoting, nProvider, nMix)
 	t.Logf("Running Voting mixnet for %d rounds.", nRounds)
 	k.Run()
 
@@ -356,7 +357,7 @@ func TestTopologyChange(t *testing.T) {
 		// align with start of epoch
 		startEpoch, _, till := epochtime.Now()
 		<-time.After(till)
-		for i:= startEpoch+1; i < startEpoch+nRounds; i++ {
+		for i := startEpoch + 1; i < startEpoch+nRounds; i++ {
 			_, _, till = epochtime.Now()
 			// wait until end of epoch
 			<-time.After(till)

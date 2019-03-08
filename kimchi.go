@@ -31,12 +31,12 @@ import (
 	"time"
 
 	"github.com/hpcloud/tail"
-	vClient "github.com/katzenpost/authority/voting/client"
-	vServer "github.com/katzenpost/authority/voting/server"
-	vConfig "github.com/katzenpost/authority/voting/server/config"
 	nvClient "github.com/katzenpost/authority/nonvoting/client"
 	aServer "github.com/katzenpost/authority/nonvoting/server"
 	aConfig "github.com/katzenpost/authority/nonvoting/server/config"
+	vClient "github.com/katzenpost/authority/voting/client"
+	vServer "github.com/katzenpost/authority/voting/server"
+	vConfig "github.com/katzenpost/authority/voting/server/config"
 	cConfig "github.com/katzenpost/client/config"
 	"github.com/katzenpost/core/crypto/ecdh"
 	"github.com/katzenpost/core/crypto/eddsa"
@@ -49,8 +49,8 @@ import (
 )
 
 const (
-	logFile       = "kimchi.log"
-	basePort      = 30000
+	logFile  = "kimchi.log"
+	basePort = 30000
 )
 
 var tailConfig = tail.Config{
@@ -66,10 +66,10 @@ type kimchi struct {
 	baseDir   string
 	logWriter io.Writer
 
-	authConfig    *aConfig.Config
+	authConfig        *aConfig.Config
 	votingAuthConfigs []*vConfig.Config
-	authIdentity  *eddsa.PrivateKey
-	voting bool
+	authIdentity      *eddsa.PrivateKey
+	voting            bool
 
 	nVoting   int
 	nProvider int
@@ -306,7 +306,7 @@ func (k *kimchi) votingPeers() []*sConfig.Peer {
 		p := &sConfig.Peer{
 			Addresses:         peer.Authority.Addresses,
 			IdentityPublicKey: string(idKey),
-			LinkPublicKey: string(linkKey),
+			LinkPublicKey:     string(linkKey),
 		}
 		if len(peer.Authority.Addresses) == 0 {
 			continue
@@ -348,7 +348,7 @@ func (k *kimchi) genNodeConfig(isProvider bool, isVoting bool) error {
 
 	if isVoting {
 		cfg.PKI = &sConfig.PKI{
-			Voting: &sConfig.Voting{Peers: k.votingPeers(),},
+			Voting: &sConfig.Voting{Peers: k.votingPeers()},
 		}
 	} else {
 		cfg.PKI = new(sConfig.PKI)
@@ -617,8 +617,8 @@ func (k *kimchi) getClientConfig() (*cConfig.Config, error) {
 	}
 	cfg.Logging = &cConfig.Logging{
 		Disable: false,
-		File: "katzenpost.log",
-		Level: "DEBUG",
+		File:    "katzenpost.log",
+		Level:   "DEBUG",
 	}
 	cfg.UpstreamProxy = &cConfig.UpstreamProxy{Type: "none"}
 	cfg.Debug = &cConfig.Debug{DisableDecoyLoops: true}
@@ -634,7 +634,7 @@ func (k *kimchi) getClientConfig() (*cConfig.Config, error) {
 		}
 	} else {
 		cfg.NonvotingAuthority = &cConfig.NonvotingAuthority{
-			Address: k.authConfig.Authority.Addresses[0],
+			Address:   k.authConfig.Authority.Addresses[0],
 			PublicKey: k.authIdentity.PublicKey(),
 		}
 	}
@@ -676,7 +676,7 @@ func retry(p pki.Client, epoch uint64, retries int) (reply []byte, err error) {
 
 	ctx, cancel := context.WithTimeout(context.Background(), time.Second*5)
 	defer cancel()
-	for i:=0; i<retries; i++ {
+	for i := 0; i < retries; i++ {
 		_, reply, err = p.Get(ctx, epoch)
 		if err == nil {
 			return
@@ -684,4 +684,3 @@ func retry(p pki.Client, epoch uint64, retries int) (reply []byte, err error) {
 	}
 	return
 }
-
