@@ -285,7 +285,7 @@ func TestClientConnect(t *testing.T) {
 		// wait until timeout or a reply is received
 		ch := make(chan []byte)
 		go func() {
-			ch <-s.WaitForReply(surb)
+			ch <- s.WaitForReply(surb)
 		}()
 		select {
 		case <-time.After(epochtime.Period):
@@ -343,7 +343,7 @@ func TestClientReceiveMessage(t *testing.T) {
 		// wait until timeout or a reply is received
 		ch := make(chan []byte)
 		go func() {
-			ch <-s.WaitForReply(surb)
+			ch <- s.WaitForReply(surb)
 		}()
 		select {
 		case <-time.After(epochtime.Period):
