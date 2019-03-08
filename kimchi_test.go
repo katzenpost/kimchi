@@ -38,6 +38,7 @@ func (k *kimchi) killAMix() bool {
 	return false
 }
 
+// TestBootstrapNonvoting tests that the nonvoting authority bootstraps and provides a consensus document
 func TestBootstrapNonvoting(t *testing.T) {
 	assert := assert.New(t)
 	voting := false
@@ -71,6 +72,7 @@ func TestBootstrapNonvoting(t *testing.T) {
 	t.Logf("Terminated.")
 }
 
+// TestBootstrapVoting tests that the voting authority bootstraps and provides a consensus document
 func TestBootstrapVoting(t *testing.T) {
 	assert := assert.New(t)
 	voting := true
@@ -106,6 +108,7 @@ func TestBootstrapVoting(t *testing.T) {
 	t.Logf("Terminated.")
 }
 
+// TestBootstrapVotingThreshold tests that a threshold number of authorities can produce a valid consensus
 func TestBootstrapVotingThreshold(t *testing.T) {
 	assert := assert.New(t)
 	voting := true
@@ -153,6 +156,7 @@ func TestBootstrapVotingThreshold(t *testing.T) {
 	t.Logf("Terminated.")
 }
 
+// TestMultipleVotingRounds tests that the authorities produce a fully signed consensus for multiple rounds
 func TestMultipleVotingRounds(t *testing.T) {
 	assert := assert.New(t)
 	voting := true
@@ -195,6 +199,7 @@ func TestMultipleVotingRounds(t *testing.T) {
 	t.Logf("Terminated.")
 }
 
+// TestAuthorityJoinConsensus tests that an authority can join a voting round and produce a fully signed consensus document
 func TestAuthorityJoinConsensus(t *testing.T) {
 	assert := assert.New(t)
 	voting := true
@@ -241,6 +246,7 @@ func TestAuthorityJoinConsensus(t *testing.T) {
 	t.Logf("Terminated.")
 }
 
+// TestClientConnect tests that a client can connect and send a message to the loop service
 func TestClientConnect(t *testing.T) {
 	assert := assert.New(t)
 	voting := true
@@ -302,6 +308,7 @@ func TestClientConnect(t *testing.T) {
 	t.Logf("Terminated.")
 }
 
+// TestClientReceiveMessage tests that a client can send a message to self
 func TestClientReceiveMessage(t *testing.T) {
 	assert := assert.New(t)
 	voting := true
@@ -359,12 +366,13 @@ func TestClientReceiveMessage(t *testing.T) {
 	t.Logf("Terminated.")
 }
 
+// TestTopologyChange tests that a Mix can fall out of consensus
 func TestTopologyChange(t *testing.T) {
 	assert := assert.New(t)
 	voting := true
 	nVoting := 3
 	nProvider := 2
-	nMix := 3
+	nMix := 6
 	nRounds := uint64(5)
 	k := NewKimchi(basePort+300, "", voting, nVoting, nProvider, nMix)
 	t.Logf("Running Voting mixnet for %d rounds.", nRounds)

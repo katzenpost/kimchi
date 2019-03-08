@@ -91,6 +91,7 @@ type server interface {
 	Wait()
 }
 
+// NewKimchi returns an initialized kimchi
 func NewKimchi(basePort int, baseDir string, voting bool, nVoting, nProvider, nMix int) *kimchi {
 	k := &kimchi{
 		lastPort:    uint16(basePort + 1),
@@ -211,10 +212,9 @@ func (k *kimchi) pkiClient() (pki.Client, error) {
 		}
 		cfg := vClient.Config{LogBackend: b, Authorities: p}
 		return vClient.New(&cfg)
-	} else {
-		cfg := nvClient.Config{LogBackend: b, Address: k.authConfig.Authority.Addresses[0], PublicKey: k.authConfig.Debug.IdentityKey.PublicKey()}
-		return nvClient.New(&cfg)
 	}
+	cfg := nvClient.Config{LogBackend: b, Address: k.authConfig.Authority.Addresses[0], PublicKey: k.authConfig.Debug.IdentityKey.PublicKey()}
+	return nvClient.New(&cfg)
 }
 
 func (k *kimchi) initLogging() error {
@@ -250,7 +250,7 @@ func (k *kimchi) genVotingAuthoritiesCfg() error {
 			Addresses:  []string{fmt.Sprintf("127.0.0.1:%d", k.lastPort)},
 			DataDir:    filepath.Join(k.baseDir, fmt.Sprintf("authority%d", i)),
 		}
-		k.lastPort += 1
+		k.lastPort++
 		if err := os.Mkdir(cfg.Authority.DataDir, 0700); err != nil {
 			return err
 		}
@@ -669,7 +669,7 @@ func (k *kimchi) getClientConfig() (*cConfig.Config, error) {
 			return cfg, nil
 		}
 	}
-	return nil, errors.New("No providers found!")
+	return nil, errors.New("no providers found")
 }
 
 func retry(p pki.Client, epoch uint64, retries int) (reply []byte, err error) {
