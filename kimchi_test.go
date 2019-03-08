@@ -282,9 +282,18 @@ func TestClientConnect(t *testing.T) {
 		surb, err := s.SendUnreliableQuery(desc.Name, desc.Provider, []byte("hello!"))
 		assert.NoError(err)
 
-		// block and wait for a reply
-		r := s.WaitForReply(surb)
-		t.Logf("Got reply: %s", r)
+		// wait until timeout or a reply is received
+		ch := make(chan []byte)
+		go func() {
+			ch <-s.WaitForReply(surb)
+		}()
+		select {
+		case <-time.After(1 * time.Minute):
+			assert.Fail("Timed out, no reply received")
+		case r := <-ch:
+			t.Logf("Got reply: %s", r)
+		}
+		close(ch)
 		c.Shutdown()
 		c.Wait()
 	}()
@@ -331,9 +340,18 @@ func TestClientReceiveMessage(t *testing.T) {
 		surb, err := s.SendUnreliableQuery(cfg.Account.User, cfg.Account.Provider, []byte("hello!"))
 		assert.NoError(err)
 
-		// block and wait for a reply. XXX: may  hang if message was dropped
-		r := s.WaitForReply(surb)
-		t.Logf("Got reply: %s", r)
+		// wait until timeout or a reply is received
+		ch := make(chan []byte)
+		go func() {
+			ch <-s.WaitForReply(surb)
+		}()
+		select {
+		case <-time.After(1 * time.Minute):
+			assert.Fail("Timed out, no reply received")
+		case r := <-ch:
+			t.Logf("Got reply: %s", r)
+		}
+		close(ch)
 		c.Shutdown()
 		c.Wait()
 	}()
