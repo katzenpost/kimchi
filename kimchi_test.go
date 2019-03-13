@@ -7,11 +7,13 @@ import (
 	"time"
 
 	aServer "github.com/katzenpost/authority/voting/server"
+	vConfig "github.com/katzenpost/authority/voting/server/config"
 	cClient "github.com/katzenpost/client"
 	"github.com/katzenpost/core/crypto/cert"
 	"github.com/katzenpost/core/epochtime"
 	sServer "github.com/katzenpost/server"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 // Shutdown an authority
@@ -408,6 +410,78 @@ func TestTopologyChange(t *testing.T) {
 				assert.True(k.killAMix())
 			}
 		}
+	}()
+
+	k.Wait()
+	t.Logf("Terminated.")
+}
+
+// TestReliableDelivery verifies that all messages sent were delivered
+func TestReliableDelivery(t *testing.T) {
+	assert := assert.New(t)
+	require := require.New(t)
+	voting := true
+	nVoting := 3
+	nProvider := 2
+	nMix := 6
+	parameters := &vConfig.Parameters{
+		MixLambda:     0.01,
+		SendLambda:    0.005,
+		MixLoopLambda: 0.005,
+	}
+	k := NewKimchi(basePort+500, "", parameters, voting, nVoting, nProvider, nMix)
+	t.Logf("Running TestClientConnect.")
+	k.Run()
+
+	go func() {
+		defer k.Shutdown()
+		_, _, till := epochtime.Now()
+		till += epochtime.Period // wait for one vote round, aligned at start of epoch
+		<-time.After(till)
+		t.Logf("Time is up!")
+
+		// create a client configuration
+		cfg, err := k.getClientConfig()
+		assert.NoError(err)
+
+		// instantiate a client instance
+		c, err := cClient.New(cfg)
+		assert.NoError(err)
+
+		// add client log output
+		go k.logTailer(cfg.Account.User, filepath.Join(cfg.Proxy.DataDir, cfg.Logging.File))
+
+		// instantiate a session
+		s, err := c.NewSession()
+		require.NoError(err)
+		require.NotNil(s)
+
+		// get a PKI document? needs client method...
+		desc, err := s.GetService("loop") // XXX: returns nil and no error?!
+		assert.NoError(err)
+
+		// send a message
+		t.Logf("desc.Provider: %s", desc.Provider)
+
+		for i := 0; i < 10; i++ {
+			msgid, err := s.SendMessage(desc.Name, desc.Provider, []byte("hello!"), true, true)
+			assert.NoError(err)
+
+			// wait until timeout or a reply is received
+			ch := make(chan []byte)
+			go func() {
+				ch <- s.WaitForReply(msgid)
+			}()
+			select {
+			case <-time.After(epochtime.Period):
+				assert.Fail("Timed out, no reply received")
+			case r := <-ch:
+				t.Logf("Got reply: %s", r)
+			}
+			close(ch)
+		}
+		c.Shutdown()
+		c.Wait()
 	}()
 
 	k.Wait()
