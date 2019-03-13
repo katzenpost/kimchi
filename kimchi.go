@@ -70,10 +70,10 @@ type kimchi struct {
 	votingAuthConfigs []*vConfig.Config
 	authIdentity      *eddsa.PrivateKey
 	voting            bool
-
-	nVoting   int
-	nProvider int
-	nMix      int
+	parameters        *vConfig.Parameters
+	nVoting           int
+	nProvider         int
+	nMix              int
 
 	nodeConfigs []*sConfig.Config
 	lastPort    uint16
@@ -92,7 +92,10 @@ type server interface {
 }
 
 // NewKimchi returns an initialized kimchi
-func NewKimchi(basePort int, baseDir string, voting bool, nVoting, nProvider, nMix int) *kimchi {
+func NewKimchi(basePort int, baseDir string, parameters *vConfig.Parameters, voting bool, nVoting, nProvider, nMix int) *kimchi {
+	if parameters == nil {
+		parameters = &vConfig.Parameters{}
+	}
 	k := &kimchi{
 		lastPort:    uint16(basePort + 1),
 		recipients:  make(map[string]*ecdh.PublicKey),
@@ -101,6 +104,7 @@ func NewKimchi(basePort int, baseDir string, voting bool, nVoting, nProvider, nM
 		nVoting:     nVoting,
 		nProvider:   nProvider,
 		nMix:        nMix,
+		parameters:  parameters,
 	}
 	// Create the base directory and bring logging online.
 	var err error
@@ -232,7 +236,6 @@ func (k *kimchi) initLogging() error {
 }
 
 func (k *kimchi) genVotingAuthoritiesCfg() error {
-	parameters := &vConfig.Parameters{}
 	configs := []*vConfig.Config{}
 
 	// initial generation of key material for each authority
@@ -244,7 +247,7 @@ func (k *kimchi) genVotingAuthoritiesCfg() error {
 			File:    "katzenpost.log",
 			Level:   "DEBUG",
 		}
-		cfg.Parameters = parameters
+		cfg.Parameters = k.parameters
 		cfg.Authority = &vConfig.Authority{
 			Identifier: fmt.Sprintf("authority-%v.example.org", i),
 			Addresses:  []string{fmt.Sprintf("127.0.0.1:%d", k.lastPort)},
