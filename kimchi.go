@@ -624,7 +624,10 @@ func (k *kimchi) getClientConfig() (*cConfig.Config, error) {
 		Level:   "DEBUG",
 	}
 	cfg.UpstreamProxy = &cConfig.UpstreamProxy{Type: "none"}
-	cfg.Debug = &cConfig.Debug{DisableDecoyLoops: true}
+	cfg.Debug = &cConfig.Debug{
+		DisableDecoyLoops: true,
+		PollingInterval: 10,
+	}
 
 	// authority section
 	if k.voting {
