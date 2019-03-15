@@ -3,6 +3,7 @@ package kimchi
 import (
 	"context"
 	"path/filepath"
+	"sync"
 	"testing"
 	"time"
 
@@ -482,6 +483,92 @@ func TestReliableDelivery(t *testing.T) {
 		}
 		c.Shutdown()
 		c.Wait()
+	}()
+
+	k.Wait()
+	t.Logf("Terminated.")
+}
+
+// TestMultipleClients tests concurrent client sessions on a provider
+func TestMultipleClients(t *testing.T) {
+	assert := assert.New(t)
+	require := require.New(t)
+	voting := true
+	nVoting := 3
+	nProvider := 2
+	nMix := 6
+	parameters := &vConfig.Parameters{
+		MixLambda:     0.01,
+		SendLambda:    0.005,
+		MixLoopLambda: 0.005,
+	}
+	k := NewKimchi(basePort+500, "", parameters, voting, nVoting, nProvider, nMix)
+	t.Logf("Running TestClientConnect.")
+	k.Run()
+
+	go func() {
+		defer k.Shutdown()
+		_, _, till := epochtime.Now()
+		till += epochtime.Period // wait for one vote round, aligned at start of epoch
+		<-time.After(till)
+		t.Logf("Time is up!")
+
+		wg := new(sync.WaitGroup)
+		for i := 0 ; i < 10 ; i ++ {
+			go func() {
+				wg.Add(1)
+				// create a client configuration
+				cfg, err := k.getClientConfig()
+				require.NoError(err)
+
+				// instantiate a client instance
+				c, err := cClient.New(cfg)
+				require.NoError(err)
+
+				// add client log output
+				go k.logTailer(cfg.Account.User, filepath.Join(cfg.Proxy.DataDir, cfg.Logging.File))
+
+				// instantiate a session
+				s, err := c.NewSession()
+				require.NoError(err)
+				require.NotNil(s)
+
+				// get a PKI document? needs client method...
+				desc, err := s.GetService("loop") // XXX: returns nil and no error?!
+				require.NoError(err)
+
+				// send a message
+				t.Logf("desc.Provider: %s", desc.Provider)
+
+				for i := 0; i < 100; i++ {
+					msgid, err := s.SendMessage(desc.Name, desc.Provider, []byte("hello!"), true, true)
+					require.NoError(err)
+
+					// wait until timeout or a reply is received
+					ch := make(chan []byte)
+					die := make(chan bool)
+					go func() {
+						select {
+						case ch <- s.WaitForReply(msgid):
+						case <- die:
+						}
+					}()
+					select {
+					case <-time.After(30 * time.Second):
+						assert.Fail("Timed out, no reply received")
+						die<-true
+					case r := <-ch:
+						t.Logf("Got reply: %s", r)
+					}
+					close(ch)
+					close(die)
+				}
+				c.Shutdown()
+				c.Wait()
+				wg.Done()
+			}()
+		}
+		wg.Wait()
 	}()
 
 	k.Wait()
