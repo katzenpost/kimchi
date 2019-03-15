@@ -458,14 +458,14 @@ func TestReliableDelivery(t *testing.T) {
 
 		// get a PKI document? needs client method...
 		desc, err := s.GetService("loop") // XXX: returns nil and no error?!
-		assert.NoError(err)
+		require.NoError(err)
 
 		// send a message
 		t.Logf("desc.Provider: %s", desc.Provider)
 
 		for i := 0; i < 10; i++ {
 			msgid, err := s.SendMessage(desc.Name, desc.Provider, []byte("hello!"), true, true)
-			assert.NoError(err)
+			require.NoError(err)
 
 			// wait until timeout or a reply is received
 			ch := make(chan []byte)
@@ -473,7 +473,7 @@ func TestReliableDelivery(t *testing.T) {
 				ch <- s.WaitForReply(msgid)
 			}()
 			select {
-			case <-time.After(epochtime.Period):
+			case <-time.After(30 * time.Second):
 				assert.Fail("Timed out, no reply received")
 			case r := <-ch:
 				t.Logf("Got reply: %s", r)
