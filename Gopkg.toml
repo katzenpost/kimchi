@@ -12,7 +12,7 @@ required = ["github.com/coreos/bbolt"]
   name = "github.com/katzenpost/core"
 
 [[constraint]]
-  revision = "3293af56be6428654b61e22cdd7d004f162842c3"
+  revision = "79b57ae25f58f43940729f703705c30cdb409143"
   name = "github.com/katzenpost/authority"
 
 [[override]]
