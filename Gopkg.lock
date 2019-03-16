@@ -243,11 +243,11 @@
   revision = "5fbf1f07545e9c38750646474cf669effc6e6f75"
 
 [[projects]]
-  digest = "1:27b7583b2ad86ea7772deddb16b29200e0153cb7aa57fa7d9a223e59393e8a22"
+  digest = "1:0a4c9978968c4fc3cb40e97ca381374ebc3b55d002e00bba64e49b741fbf18a3"
   name = "github.com/katzenpost/minclient"
   packages = ["."]
   pruneopts = "UT"
-  revision = "cffd537b949f3fc69247873267a518dacc8a1a55"
+  revision = "b2d8673911ea52dcb471d3c91e7c2ae1218cf532"
 
 [[projects]]
   branch = "master"

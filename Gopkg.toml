@@ -16,7 +16,7 @@ required = ["github.com/coreos/bbolt"]
   name = "github.com/katzenpost/authority"
 
 [[override]]
-  revision = "cffd537b949f3fc69247873267a518dacc8a1a55"
+  revision = "b2d8673911ea52dcb471d3c91e7c2ae1218cf532"
   name = "github.com/katzenpost/minclient"
 
 [[override]]
