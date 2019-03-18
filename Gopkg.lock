@@ -258,7 +258,7 @@
   revision = "08e83772a9119dc0b35028bc6d8412dc22b0a9ee"
 
 [[projects]]
-  digest = "1:1b76bfa04b7954ddff931459fb9d74c1cb117af0ebaab30898e97807bea12c91"
+  digest = "1:b66180554a1663a64b9a82c22c7961f4baf301076a70a34fca30f3060e9be5f1"
   name = "github.com/katzenpost/server"
   packages = [
     ".",
@@ -288,7 +288,7 @@
     "userdb/externuserdb",
   ]
   pruneopts = "UT"
-  revision = "074b6faf7199eaeded41a0003cf8d1ae2b1ade89"
+  revision = "0b8e396a52f4ff2172593f0af1f70ee951e2763c"
 
 [[projects]]
   digest = "1:42eb1f52b84a06820cedc9baec2e710bfbda3ee6dac6cdb97f8b9a5066134ec6"
@@ -380,14 +380,14 @@
 
 [[projects]]
   branch = "master"
-  digest = "1:53df1464a35ecef619d5d29fc24427e34798c47c31f8a35ff709cb71b4009972"
+  digest = "1:d3229d0c4f5a29399fe3d39cd64de216af15f8bce9a00932c0a7a5ddaa6418f7"
   name = "golang.org/x/sys"
   packages = [
     "cpu",
     "unix",
   ]
   pruneopts = "UT"
-  revision = "a2f829d7f35f2ed1c3520c553a6226495455cae0"
+  revision = "6c81ef8f67ca3f42fc9cd71dfbd5f35b0c4b5771"
 
 [[projects]]
   digest = "1:2b43038ba580394ec711455c92dc9c89f3c29ad758136afe6aef01685ef3b557"
