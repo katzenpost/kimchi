@@ -8,7 +8,6 @@ import (
 	"time"
 
 	aServer "github.com/katzenpost/authority/voting/server"
-	vConfig "github.com/katzenpost/authority/voting/server/config"
 	cClient "github.com/katzenpost/client"
 	"github.com/katzenpost/core/crypto/cert"
 	"github.com/katzenpost/core/epochtime"

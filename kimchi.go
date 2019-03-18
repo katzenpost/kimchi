@@ -70,7 +70,7 @@ type kimchi struct {
 	votingAuthConfigs []*vConfig.Config
 	authIdentity      *eddsa.PrivateKey
 	voting            bool
-	parameters        *vConfig.Parameters
+	parameters        *Parameters
 	nVoting           int
 	nProvider         int
 	nMix              int
@@ -91,10 +91,14 @@ type server interface {
 	Wait()
 }
 
+type Parameters struct {
+	vConfig.Parameters
+}
+
 // NewKimchi returns an initialized kimchi
-func NewKimchi(basePort int, baseDir string, parameters *vConfig.Parameters, voting bool, nVoting, nProvider, nMix int) *kimchi {
+func NewKimchi(basePort int, baseDir string, parameters *Parameters, voting bool, nVoting, nProvider, nMix int) *kimchi {
 	if parameters == nil {
-		parameters = &vConfig.Parameters{}
+		parameters = &Parameters{}
 	}
 	k := &kimchi{
 		lastPort:    uint16(basePort + 1),
@@ -236,6 +240,16 @@ func (k *kimchi) initLogging() error {
 }
 
 func (k *kimchi) genVotingAuthoritiesCfg() error {
+	// create voting config.Parameters from generic parameters
+	parameters := &vConfig.Parameters{
+		SendRatePerMinute: k.parameters.SendRatePerMinute,
+		MixLambda: k.parameters.MixLambda,
+		MixMaxDelay: k.parameters.MixMaxDelay,
+		SendLambda: k.parameters.SendLambda,
+		SendMaxInterval: k.parameters.SendMaxInterval,
+		MixLoopLambda: k.parameters.MixLoopLambda,
+		MixLoopMaxInterval: k.parameters.MixLoopMaxInterval,
+	}
 	configs := []*vConfig.Config{}
 
 	// initial generation of key material for each authority
@@ -247,7 +261,7 @@ func (k *kimchi) genVotingAuthoritiesCfg() error {
 			File:    "katzenpost.log",
 			Level:   "DEBUG",
 		}
-		cfg.Parameters = k.parameters
+		cfg.Parameters = parameters
 		cfg.Authority = &vConfig.Authority{
 			Identifier: fmt.Sprintf("authority-%v.example.org", i),
 			Addresses:  []string{fmt.Sprintf("127.0.0.1:%d", k.lastPort)},
@@ -413,12 +427,26 @@ func (k *kimchi) genNodeConfig(isProvider bool, isVoting bool) error {
 func (k *kimchi) genAuthConfig() error {
 	const authLogFile = "authority.log"
 
+	// create nonvoting config.Parameters from generic parameters
+	parameters := &aConfig.Parameters{
+		SendRatePerMinute: k.parameters.SendRatePerMinute,
+		MixLambda: k.parameters.MixLambda,
+		MixMaxDelay: k.parameters.MixMaxDelay,
+		SendLambda: k.parameters.SendLambda,
+		SendMaxInterval: k.parameters.SendMaxInterval,
+		MixLoopLambda: k.parameters.MixLoopLambda,
+		MixLoopMaxInterval: k.parameters.MixLoopMaxInterval,
+	}
+
 	cfg := new(aConfig.Config)
 
 	// Authority section.
 	cfg.Authority = new(aConfig.Authority)
 	cfg.Authority.Addresses = []string{fmt.Sprintf("127.0.0.1:%d", basePort)}
 	cfg.Authority.DataDir = filepath.Join(k.baseDir, "authority")
+
+	// Parameters section.
+	cfg.Parameters = parameters
 
 	// Logging section.
 	cfg.Logging = new(aConfig.Logging)
