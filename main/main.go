@@ -48,7 +48,8 @@ func main() {
 		defer pprof.StopCPUProfile()
 	}
 
-	k := kimchi.NewKimchi(30000, "",  *voting, *nVoting, *nProvider, *nMix)
+	p := &kimchi.Parameters{}
+	k := kimchi.NewKimchi(30000, "", p, *voting, *nVoting, *nProvider, *nMix)
 
 	k.Run()
 
