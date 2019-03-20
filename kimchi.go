@@ -70,10 +70,10 @@ type kimchi struct {
 	votingAuthConfigs []*vConfig.Config
 	authIdentity      *eddsa.PrivateKey
 	voting            bool
-
-	nVoting   int
-	nProvider int
-	nMix      int
+	parameters        *Parameters
+	nVoting           int
+	nProvider         int
+	nMix              int
 
 	nodeConfigs []*sConfig.Config
 	lastPort    uint16
@@ -91,7 +91,15 @@ type server interface {
 	Wait()
 }
 
-func NewKimchi(basePort int, baseDir string, voting bool, nVoting, nProvider, nMix int) *kimchi {
+type Parameters struct {
+	vConfig.Parameters
+}
+
+// NewKimchi returns an initialized kimchi
+func NewKimchi(basePort int, baseDir string, parameters *Parameters, voting bool, nVoting, nProvider, nMix int) *kimchi {
+	if parameters == nil {
+		parameters = &Parameters{}
+	}
 	k := &kimchi{
 		lastPort:    uint16(basePort + 1),
 		recipients:  make(map[string]*ecdh.PublicKey),
@@ -100,6 +108,7 @@ func NewKimchi(basePort int, baseDir string, voting bool, nVoting, nProvider, nM
 		nVoting:     nVoting,
 		nProvider:   nProvider,
 		nMix:        nMix,
+		parameters:  parameters,
 	}
 	// Create the base directory and bring logging online.
 	var err error
@@ -211,10 +220,9 @@ func (k *kimchi) pkiClient() (pki.Client, error) {
 		}
 		cfg := vClient.Config{LogBackend: b, Authorities: p}
 		return vClient.New(&cfg)
-	} else {
-		cfg := nvClient.Config{LogBackend: b, Address: k.authConfig.Authority.Addresses[0], PublicKey: k.authConfig.Debug.IdentityKey.PublicKey()}
-		return nvClient.New(&cfg)
 	}
+	cfg := nvClient.Config{LogBackend: b, Address: k.authConfig.Authority.Addresses[0], PublicKey: k.authConfig.Debug.IdentityKey.PublicKey()}
+	return nvClient.New(&cfg)
 }
 
 func (k *kimchi) initLogging() error {
@@ -232,7 +240,16 @@ func (k *kimchi) initLogging() error {
 }
 
 func (k *kimchi) genVotingAuthoritiesCfg() error {
-	parameters := &vConfig.Parameters{}
+	// create voting config.Parameters from generic parameters
+	parameters := &vConfig.Parameters{
+		SendRatePerMinute: k.parameters.SendRatePerMinute,
+		MixLambda: k.parameters.MixLambda,
+		MixMaxDelay: k.parameters.MixMaxDelay,
+		SendLambda: k.parameters.SendLambda,
+		SendMaxInterval: k.parameters.SendMaxInterval,
+		MixLoopLambda: k.parameters.MixLoopLambda,
+		MixLoopMaxInterval: k.parameters.MixLoopMaxInterval,
+	}
 	configs := []*vConfig.Config{}
 
 	// initial generation of key material for each authority
@@ -250,7 +267,7 @@ func (k *kimchi) genVotingAuthoritiesCfg() error {
 			Addresses:  []string{fmt.Sprintf("127.0.0.1:%d", k.lastPort)},
 			DataDir:    filepath.Join(k.baseDir, fmt.Sprintf("authority%d", i)),
 		}
-		k.lastPort += 1
+		k.lastPort++
 		if err := os.Mkdir(cfg.Authority.DataDir, 0700); err != nil {
 			return err
 		}
@@ -339,7 +356,7 @@ func (k *kimchi) genNodeConfig(isProvider bool, isVoting bool) error {
 
 	// Debug section.
 	cfg.Debug = new(sConfig.Debug)
-	cfg.Debug.NumSphinxWorkers = 1
+	cfg.Debug.DisableRateLimit = true
 	identity, err := eddsa.NewKeypair(rand.Reader)
 	if err != nil {
 		return err
@@ -410,12 +427,26 @@ func (k *kimchi) genNodeConfig(isProvider bool, isVoting bool) error {
 func (k *kimchi) genAuthConfig() error {
 	const authLogFile = "authority.log"
 
+	// create nonvoting config.Parameters from generic parameters
+	parameters := &aConfig.Parameters{
+		SendRatePerMinute: k.parameters.SendRatePerMinute,
+		MixLambda: k.parameters.MixLambda,
+		MixMaxDelay: k.parameters.MixMaxDelay,
+		SendLambda: k.parameters.SendLambda,
+		SendMaxInterval: k.parameters.SendMaxInterval,
+		MixLoopLambda: k.parameters.MixLoopLambda,
+		MixLoopMaxInterval: k.parameters.MixLoopMaxInterval,
+	}
+
 	cfg := new(aConfig.Config)
 
 	// Authority section.
 	cfg.Authority = new(aConfig.Authority)
 	cfg.Authority.Addresses = []string{fmt.Sprintf("127.0.0.1:%d", basePort)}
 	cfg.Authority.DataDir = filepath.Join(k.baseDir, "authority")
+
+	// Parameters section.
+	cfg.Parameters = parameters
 
 	// Logging section.
 	cfg.Logging = new(aConfig.Logging)
@@ -621,7 +652,10 @@ func (k *kimchi) getClientConfig() (*cConfig.Config, error) {
 		Level:   "DEBUG",
 	}
 	cfg.UpstreamProxy = &cConfig.UpstreamProxy{Type: "none"}
-	cfg.Debug = &cConfig.Debug{DisableDecoyLoops: true}
+	cfg.Debug = &cConfig.Debug{
+		DisableDecoyLoops: true,
+		PollingInterval: 10,
+	}
 
 	// authority section
 	if k.voting {
@@ -669,7 +703,7 @@ func (k *kimchi) getClientConfig() (*cConfig.Config, error) {
 			return cfg, nil
 		}
 	}
-	return nil, errors.New("No providers found!")
+	return nil, errors.New("no providers found")
 }
 
 func retry(p pki.Client, epoch uint64, retries int) (reply []byte, err error) {
