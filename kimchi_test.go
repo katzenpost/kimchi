@@ -424,12 +424,9 @@ func TestReliableDelivery(t *testing.T) {
 	nVoting := 3
 	nProvider := 2
 	nMix := 6
-	parameters := &vConfig.Parameters{
-		MixLambda:     0.01,
-		SendLambda:    0.005,
-		MixLoopLambda: 0.005,
-	}
-	k := NewKimchi(basePort+500, "", parameters, voting, nVoting, nProvider, nMix)
+	p := &Parameters{}
+	p.MixLambda, p.SendLambda, p.MixLoopLambda = 0.005, 0.005, 0.005
+	k := NewKimchi(basePort+500, "", p, voting, nVoting, nProvider, nMix)
 	t.Logf("Running TestClientConnect.")
 	k.Run()
 
@@ -496,12 +493,9 @@ func TestMultipleClients(t *testing.T) {
 	nVoting := 3
 	nProvider := 2
 	nMix := 6
-	parameters := &vConfig.Parameters{
-		MixLambda:     0.01,
-		SendLambda:    0.005,
-		MixLoopLambda: 0.005,
-	}
-	k := NewKimchi(basePort+500, "", parameters, voting, nVoting, nProvider, nMix)
+	p := &Parameters{}
+	p.MixLambda, p.SendLambda, p.MixLoopLambda = 0.01, 0.005, 0.005
+	k := NewKimchi(basePort+500, "", p, voting, nVoting, nProvider, nMix)
 	t.Logf("Running TestClientConnect.")
 	k.Run()
 
