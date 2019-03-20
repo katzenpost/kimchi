@@ -356,7 +356,7 @@ func (k *kimchi) genNodeConfig(isProvider bool, isVoting bool) error {
 
 	// Debug section.
 	cfg.Debug = new(sConfig.Debug)
-	cfg.Debug.NumSphinxWorkers = 1
+	cfg.Debug.DisableRateLimit = true
 	identity, err := eddsa.NewKeypair(rand.Reader)
 	if err != nil {
 		return err
