@@ -1,6 +1,5 @@
 image: "golang:1.11"
 before_script:
-  - git config --global http.https://gopkg.in.followRedirects true
   - go get -u -v -t ./...
 kimchi:
   script:
