@@ -170,7 +170,7 @@ func TestMultipleVotingRounds(t *testing.T) {
 	nProvider := 2
 	nMix := 6
 	nRounds := uint64(3)
-	k := NewKimchi(basePort+300, "", nil, voting, nVoting, nProvider, nMix)
+	k := NewKimchi(basePort+200, "", nil, voting, nVoting, nProvider, nMix)
 	t.Logf("Running Voting mixnet for %d rounds.", nRounds)
 	k.Run()
 
@@ -214,7 +214,7 @@ func TestAuthorityJoinConsensus(t *testing.T) {
 	nProvider := 2
 	nMix := 6
 	nRounds := uint64(3)
-	k := NewKimchi(basePort+400, "", nil, voting, nVoting, nProvider, nMix)
+	k := NewKimchi(basePort+300, "", nil, voting, nVoting, nProvider, nMix)
 	t.Logf("Running Voting mixnet for %d rounds.", nRounds)
 	delay := epochtime.Period // miss the first voting round
 	k.runWithDelayedAuthority(delay)
@@ -261,7 +261,7 @@ func TestClientConnect(t *testing.T) {
 	nVoting := 3
 	nProvider := 2
 	nMix := 6
-	k := NewKimchi(basePort+500, "", nil, voting, nVoting, nProvider, nMix)
+	k := NewKimchi(basePort+400, "", nil, voting, nVoting, nProvider, nMix)
 	t.Logf("Running TestClientConnect.")
 	k.Run()
 
@@ -324,7 +324,7 @@ func TestClientReceiveMessage(t *testing.T) {
 	nVoting := 3
 	nProvider := 2
 	nMix := 3
-	k := NewKimchi(basePort+600, "", nil, voting, nVoting, nProvider, nMix)
+	k := NewKimchi(basePort+500, "", nil, voting, nVoting, nProvider, nMix)
 	t.Logf("Running TestClientConnect.")
 	k.Run()
 
@@ -384,7 +384,7 @@ func TestTopologyChange(t *testing.T) {
 	nProvider := 2
 	nMix := 6
 	nRounds := uint64(5)
-	k := NewKimchi(basePort+300, "", nil, voting, nVoting, nProvider, nMix)
+	k := NewKimchi(basePort+600, "", nil, voting, nVoting, nProvider, nMix)
 	t.Logf("Running Voting mixnet for %d rounds.", nRounds)
 	k.Run()
 
@@ -436,7 +436,7 @@ func TestReliableDelivery(t *testing.T) {
 	nMix := 6
 	p := &Parameters{}
 	p.Mu, p.LambdaP, p.LambdaL= 0.005, 0.005, 0.005
-	k := NewKimchi(basePort+500, "", p, voting, nVoting, nProvider, nMix)
+	k := NewKimchi(basePort+700, "", p, voting, nVoting, nProvider, nMix)
 	t.Logf("Running TestClientConnect.")
 	k.Run()
 
@@ -509,7 +509,7 @@ func TestMultipleClients(t *testing.T) {
 	nMix := 6
 	p := &Parameters{}
 	p.Mu, p.LambdaP, p.LambdaL= 0.005, 0.005, 0.005
-	k := NewKimchi(basePort+500, "", p, voting, nVoting, nProvider, nMix)
+	k := NewKimchi(basePort+800, "", p, voting, nVoting, nProvider, nMix)
 	t.Logf("Running TestClientConnect.")
 	k.Run()
 
