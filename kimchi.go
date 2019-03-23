@@ -243,12 +243,12 @@ func (k *kimchi) genVotingAuthoritiesCfg() error {
 	// create voting config.Parameters from generic parameters
 	parameters := &vConfig.Parameters{
 		SendRatePerMinute: k.parameters.SendRatePerMinute,
-		MixLambda: k.parameters.MixLambda,
-		MixMaxDelay: k.parameters.MixMaxDelay,
-		SendLambda: k.parameters.SendLambda,
-		SendMaxInterval: k.parameters.SendMaxInterval,
-		MixLoopLambda: k.parameters.MixLoopLambda,
-		MixLoopMaxInterval: k.parameters.MixLoopMaxInterval,
+		Mu: k.parameters.Mu,
+		MuMaxDelay: k.parameters.MuMaxDelay,
+		LambdaP: k.parameters.LambdaP,
+		LambdaPMaxDelay: k.parameters.LambdaPMaxDelay,
+		LambdaL: k.parameters.LambdaL,
+		LambdaLMaxDelay: k.parameters.LambdaLMaxDelay,
 	}
 	configs := []*vConfig.Config{}
 
@@ -430,12 +430,12 @@ func (k *kimchi) genAuthConfig() error {
 	// create nonvoting config.Parameters from generic parameters
 	parameters := &aConfig.Parameters{
 		SendRatePerMinute: k.parameters.SendRatePerMinute,
-		MixLambda: k.parameters.MixLambda,
-		MixMaxDelay: k.parameters.MixMaxDelay,
-		SendLambda: k.parameters.SendLambda,
-		SendMaxInterval: k.parameters.SendMaxInterval,
-		MixLoopLambda: k.parameters.MixLoopLambda,
-		MixLoopMaxInterval: k.parameters.MixLoopMaxInterval,
+		Mu: k.parameters.Mu,
+		MuMaxDelay: k.parameters.MuMaxDelay,
+		LambdaP: k.parameters.LambdaP,
+		LambdaPMaxDelay: k.parameters.LambdaPMaxDelay,
+		LambdaL: k.parameters.LambdaL,
+		LambdaLMaxDelay: k.parameters.LambdaLMaxDelay,
 	}
 
 	cfg := new(aConfig.Config)
