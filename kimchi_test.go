@@ -42,6 +42,7 @@ func (k *kimchi) killAMix() bool {
 
 // TestBootstrapNonvoting tests that the nonvoting authority bootstraps and provides a consensus document
 func TestBootstrapNonvoting(t *testing.T) {
+	t.Parallel()
 	assert := assert.New(t)
 	voting := false
 	nVoting := 0
@@ -76,6 +77,7 @@ func TestBootstrapNonvoting(t *testing.T) {
 
 // TestBootstrapVoting tests that the voting authority bootstraps and provides a consensus document
 func TestBootstrapVoting(t *testing.T) {
+	t.Parallel()
 	assert := assert.New(t)
 	voting := true
 	nVoting := 3
@@ -112,6 +114,7 @@ func TestBootstrapVoting(t *testing.T) {
 
 // TestBootstrapVotingThreshold tests that a threshold number of authorities can produce a valid consensus
 func TestBootstrapVotingThreshold(t *testing.T) {
+	t.Parallel()
 	assert := assert.New(t)
 	voting := true
 	nVoting := 3
@@ -160,6 +163,7 @@ func TestBootstrapVotingThreshold(t *testing.T) {
 
 // TestMultipleVotingRounds tests that the authorities produce a fully signed consensus for multiple rounds
 func TestMultipleVotingRounds(t *testing.T) {
+	t.Parallel()
 	assert := assert.New(t)
 	voting := true
 	nVoting := 3
@@ -203,6 +207,7 @@ func TestMultipleVotingRounds(t *testing.T) {
 
 // TestAuthorityJoinConsensus tests that an authority can join a voting round and produce a fully signed consensus document
 func TestAuthorityJoinConsensus(t *testing.T) {
+	t.Parallel()
 	assert := assert.New(t)
 	voting := true
 	nVoting := 3
@@ -250,6 +255,7 @@ func TestAuthorityJoinConsensus(t *testing.T) {
 
 // TestClientConnect tests that a client can connect and send a message to the loop service
 func TestClientConnect(t *testing.T) {
+	t.Parallel()
 	assert := assert.New(t)
 	voting := true
 	nVoting := 3
@@ -312,6 +318,7 @@ func TestClientConnect(t *testing.T) {
 
 // TestClientReceiveMessage tests that a client can send a message to self
 func TestClientReceiveMessage(t *testing.T) {
+	t.Parallel()
 	assert := assert.New(t)
 	voting := true
 	nVoting := 3
@@ -370,6 +377,7 @@ func TestClientReceiveMessage(t *testing.T) {
 
 // TestTopologyChange tests that a Mix can fall out of consensus
 func TestTopologyChange(t *testing.T) {
+	t.Parallel()
 	assert := assert.New(t)
 	voting := true
 	nVoting := 3
@@ -418,6 +426,7 @@ func TestTopologyChange(t *testing.T) {
 
 // TestReliableDelivery verifies that all messages sent were delivered
 func TestReliableDelivery(t *testing.T) {
+	t.Parallel()
 	assert := assert.New(t)
 	require := require.New(t)
 	voting := true
@@ -487,6 +496,7 @@ func TestReliableDelivery(t *testing.T) {
 
 // TestMultipleClients tests concurrent client sessions on a provider
 func TestMultipleClients(t *testing.T) {
+	t.Parallel()
 	assert := assert.New(t)
 	require := require.New(t)
 	voting := true
