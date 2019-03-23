@@ -8,23 +8,24 @@ required = ["github.com/coreos/bbolt"]
   name = "github.com/coreos/bbolt"
 
 [[constraint]]
-  revision = "5fbf1f07545e9c38750646474cf669effc6e6f75"
+  revision = "ebf6b0ee65d29ae5361f8882d83da6bd0031a68b"
   name = "github.com/katzenpost/core"
 
 [[constraint]]
-  revision = "79b57ae25f58f43940729f703705c30cdb409143"
+  revision = "aa75bd36c6debca9e28363ef7d45af3d1d3c2e7f"
   name = "github.com/katzenpost/authority"
 
 [[override]]
-  revision = "b2d8673911ea52dcb471d3c91e7c2ae1218cf532"
+  revision = "446e0edc33f9a90afd60546455f8cfa62f65eb90"
   name = "github.com/katzenpost/minclient"
 
 [[override]]
-  revision = "17e5b97a06cbfbb340ec300ac11010ba2c825038"
+  # master is missing reliability, will fail city
+  revision = "9ef05da344143d1952bdf3651fc204d1e9739d25"
   name = "github.com/katzenpost/client"
 
 [[override]]
-  revision = "074b6faf7199eaeded41a0003cf8d1ae2b1ade89"
+  revision = "f31b1483530c6d059ed1cbd3fd3df91108907664"
   name = "github.com/katzenpost/server"
 
 # other stuff
