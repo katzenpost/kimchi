@@ -59,7 +59,7 @@ var tailConfig = tail.Config{
 	Logger: tail.DiscardingLogger,
 }
 
-type kimchi struct {
+type Kimchi struct {
 	sync.Mutex
 	sync.WaitGroup
 
@@ -96,11 +96,11 @@ type Parameters struct {
 }
 
 // NewKimchi returns an initialized kimchi
-func NewKimchi(basePort int, baseDir string, parameters *Parameters, voting bool, nVoting, nProvider, nMix int) *kimchi {
+func NewKimchi(basePort int, baseDir string, parameters *Parameters, voting bool, nVoting, nProvider, nMix int) *Kimchi {
 	if parameters == nil {
 		parameters = &Parameters{}
 	}
-	k := &kimchi{
+	k := &Kimchi{
 		lastPort:    uint16(basePort + 1),
 		recipients:  make(map[string]*ecdh.PublicKey),
 		nodeConfigs: make([]*sConfig.Config, 0),
@@ -132,7 +132,7 @@ func NewKimchi(basePort int, baseDir string, parameters *Parameters, voting bool
 	return k
 }
 
-func (k *kimchi) Run() {
+func (k *Kimchi) Run() {
 	// Launch all the nodes.
 	for _, v := range k.nodeConfigs {
 		v.FixupAndValidate()
@@ -142,12 +142,12 @@ func (k *kimchi) Run() {
 		}
 
 		k.servers = append(k.servers, svr)
-		go k.logTailer(v.Server.Identifier, filepath.Join(v.Server.DataDir, v.Logging.File))
+		go k.LogTailer(v.Server.Identifier, filepath.Join(v.Server.DataDir, v.Logging.File))
 	}
 	k.runAuthority()
 }
 
-func (k *kimchi) initConfig() error {
+func (k *Kimchi) initConfig() error {
 	// Generate the authority configs
 	var err error
 	if k.voting {
@@ -196,7 +196,7 @@ func (k *kimchi) initConfig() error {
 	return err
 }
 
-func (k *kimchi) runAuthority() {
+func (k *Kimchi) runAuthority() {
 	var err error
 	if k.voting {
 		err = k.runVotingAuthorities()
@@ -208,7 +208,7 @@ func (k *kimchi) runAuthority() {
 	}
 }
 
-func (k *kimchi) pkiClient() (pki.Client, error) {
+func (k *Kimchi) PKIClient() (pki.Client, error) {
 	b, err := klog.New("", "DEBUG", false)
 	if err != nil {
 		return nil, err
@@ -225,7 +225,7 @@ func (k *kimchi) pkiClient() (pki.Client, error) {
 	return nvClient.New(&cfg)
 }
 
-func (k *kimchi) initLogging() error {
+func (k *Kimchi) initLogging() error {
 	logFilePath := filepath.Join(k.baseDir, logFile)
 	f, err := os.OpenFile(logFilePath, os.O_CREATE|os.O_APPEND|os.O_WRONLY, 0600)
 	if err != nil {
@@ -239,16 +239,16 @@ func (k *kimchi) initLogging() error {
 	return nil
 }
 
-func (k *kimchi) genVotingAuthoritiesCfg() error {
+func (k *Kimchi) genVotingAuthoritiesCfg() error {
 	// create voting config.Parameters from generic parameters
 	parameters := &vConfig.Parameters{
 		SendRatePerMinute: k.parameters.SendRatePerMinute,
-		Mu: k.parameters.Mu,
-		MuMaxDelay: k.parameters.MuMaxDelay,
-		LambdaP: k.parameters.LambdaP,
-		LambdaPMaxDelay: k.parameters.LambdaPMaxDelay,
-		LambdaL: k.parameters.LambdaL,
-		LambdaLMaxDelay: k.parameters.LambdaLMaxDelay,
+		Mu:                k.parameters.Mu,
+		MuMaxDelay:        k.parameters.MuMaxDelay,
+		LambdaP:           k.parameters.LambdaP,
+		LambdaPMaxDelay:   k.parameters.LambdaPMaxDelay,
+		LambdaL:           k.parameters.LambdaL,
+		LambdaLMaxDelay:   k.parameters.LambdaLMaxDelay,
 	}
 	configs := []*vConfig.Config{}
 
@@ -309,7 +309,7 @@ func (k *kimchi) genVotingAuthoritiesCfg() error {
 	return nil
 }
 
-func (k *kimchi) votingPeers() []*sConfig.Peer {
+func (k *Kimchi) votingPeers() []*sConfig.Peer {
 	peers := []*sConfig.Peer{}
 	for _, peer := range k.votingAuthConfigs {
 		idKey, err := peer.Debug.IdentityKey.PublicKey().MarshalText()
@@ -333,7 +333,7 @@ func (k *kimchi) votingPeers() []*sConfig.Peer {
 	return peers
 }
 
-func (k *kimchi) genNodeConfig(isProvider bool, isVoting bool) error {
+func (k *Kimchi) genNodeConfig(isProvider bool, isVoting bool) error {
 	const serverLogFile = "katzenpost.log"
 
 	n := fmt.Sprintf("node-%d", k.nodeIdx)
@@ -424,18 +424,18 @@ func (k *kimchi) genNodeConfig(isProvider bool, isVoting bool) error {
 	return nil
 }
 
-func (k *kimchi) genAuthConfig() error {
+func (k *Kimchi) genAuthConfig() error {
 	const authLogFile = "authority.log"
 
 	// create nonvoting config.Parameters from generic parameters
 	parameters := &aConfig.Parameters{
 		SendRatePerMinute: k.parameters.SendRatePerMinute,
-		Mu: k.parameters.Mu,
-		MuMaxDelay: k.parameters.MuMaxDelay,
-		LambdaP: k.parameters.LambdaP,
-		LambdaPMaxDelay: k.parameters.LambdaPMaxDelay,
-		LambdaL: k.parameters.LambdaL,
-		LambdaLMaxDelay: k.parameters.LambdaLMaxDelay,
+		Mu:                k.parameters.Mu,
+		MuMaxDelay:        k.parameters.MuMaxDelay,
+		LambdaP:           k.parameters.LambdaP,
+		LambdaPMaxDelay:   k.parameters.LambdaPMaxDelay,
+		LambdaL:           k.parameters.LambdaL,
+		LambdaLMaxDelay:   k.parameters.LambdaLMaxDelay,
 	}
 
 	cfg := new(aConfig.Config)
@@ -476,7 +476,7 @@ func (k *kimchi) genAuthConfig() error {
 	return nil
 }
 
-func (k *kimchi) generateWhitelist() ([]*aConfig.Node, []*aConfig.Node, error) {
+func (k *Kimchi) generateWhitelist() ([]*aConfig.Node, []*aConfig.Node, error) {
 	mixes := []*aConfig.Node{}
 	providers := []*aConfig.Node{}
 	for _, nodeCfg := range k.nodeConfigs {
@@ -499,7 +499,7 @@ func (k *kimchi) generateWhitelist() ([]*aConfig.Node, []*aConfig.Node, error) {
 }
 
 // generateWhitelist returns providers, mixes, error
-func (k *kimchi) generateVotingWhitelist() ([]*vConfig.Node, []*vConfig.Node, error) {
+func (k *Kimchi) generateVotingWhitelist() ([]*vConfig.Node, []*vConfig.Node, error) {
 	mixes := []*vConfig.Node{}
 	providers := []*vConfig.Node{}
 	for _, nodeCfg := range k.nodeConfigs {
@@ -520,32 +520,32 @@ func (k *kimchi) generateVotingWhitelist() ([]*vConfig.Node, []*vConfig.Node, er
 	return providers, mixes, nil
 }
 
-func (k *kimchi) runNonvoting() error {
+func (k *Kimchi) runNonvoting() error {
 	a := k.authConfig
 	a.FixupAndValidate()
 	server, err := aServer.New(a)
 	if err != nil {
 		return err
 	}
-	go k.logTailer("nonvoting", filepath.Join(a.Authority.DataDir, a.Logging.File))
+	go k.LogTailer("nonvoting", filepath.Join(a.Authority.DataDir, a.Logging.File))
 	k.servers = append(k.servers, server)
 	return nil
 }
 
-func (k *kimchi) runVotingAuthorities() error {
+func (k *Kimchi) runVotingAuthorities() error {
 	for _, vCfg := range k.votingAuthConfigs {
 		vCfg.FixupAndValidate()
 		server, err := vServer.New(vCfg)
 		if err != nil {
 			return err
 		}
-		go k.logTailer(vCfg.Authority.Identifier, filepath.Join(vCfg.Authority.DataDir, vCfg.Logging.File))
+		go k.LogTailer(vCfg.Authority.Identifier, filepath.Join(vCfg.Authority.DataDir, vCfg.Logging.File))
 		k.servers = append(k.servers, server)
 	}
 	return nil
 }
 
-func (k *kimchi) thwackUser(provider *sConfig.Config, user string, pubKey *ecdh.PublicKey) error {
+func (k *Kimchi) thwackUser(provider *sConfig.Config, user string, pubKey *ecdh.PublicKey) error {
 	log.Printf("Attempting to add user: %v@%v", user, provider.Server.Identifier)
 
 	sockFn := filepath.Join(provider.Server.DataDir, "management_sock")
@@ -575,7 +575,7 @@ func (k *kimchi) thwackUser(provider *sConfig.Config, user string, pubKey *ecdh.
 	return nil
 }
 
-func (k *kimchi) logTailer(prefix, path string) {
+func (k *Kimchi) LogTailer(prefix, path string) {
 	k.Add(1)
 	defer k.Done()
 
@@ -595,7 +595,7 @@ func (k *kimchi) logTailer(prefix, path string) {
 	}
 }
 
-func (k *kimchi) Shutdown() {
+func (k *Kimchi) Shutdown() {
 	for _, svr := range k.servers {
 		svr.Shutdown()
 	}
@@ -606,7 +606,7 @@ func (k *kimchi) Shutdown() {
 	log.Printf("Terminated.")
 }
 
-func (k *kimchi) runWithDelayedAuthority(delay time.Duration) {
+func (k *Kimchi) runWithDelayedAuthority(delay time.Duration) {
 	// Launch all the nodes.
 	for _, v := range k.nodeConfigs {
 		v.FixupAndValidate()
@@ -616,7 +616,7 @@ func (k *kimchi) runWithDelayedAuthority(delay time.Duration) {
 		}
 
 		k.servers = append(k.servers, svr)
-		go k.logTailer(v.Server.Identifier, filepath.Join(v.Server.DataDir, v.Logging.File))
+		go k.LogTailer(v.Server.Identifier, filepath.Join(v.Server.DataDir, v.Logging.File))
 	}
 
 	f := func(vCfg *vConfig.Config) {
@@ -625,7 +625,7 @@ func (k *kimchi) runWithDelayedAuthority(delay time.Duration) {
 		if err != nil {
 			return
 		}
-		go k.logTailer(vCfg.Authority.Identifier, filepath.Join(vCfg.Authority.DataDir, vCfg.Logging.File))
+		go k.LogTailer(vCfg.Authority.Identifier, filepath.Join(vCfg.Authority.DataDir, vCfg.Logging.File))
 		k.servers = append(k.servers, server)
 	}
 
@@ -639,7 +639,7 @@ func (k *kimchi) runWithDelayedAuthority(delay time.Duration) {
 	}()
 }
 
-func (k *kimchi) getClientConfig() (*cConfig.Config, error) {
+func (k *Kimchi) GetClientConfig() (*cConfig.Config, error) {
 	cfg := new(cConfig.Config)
 	m := rand.NewMath()
 	cfg.Proxy = &cConfig.Proxy{DataDir: filepath.Join(k.baseDir, fmt.Sprintf("client%d", m.Intn(1<<32)))}
@@ -654,7 +654,7 @@ func (k *kimchi) getClientConfig() (*cConfig.Config, error) {
 	cfg.UpstreamProxy = &cConfig.UpstreamProxy{Type: "none"}
 	cfg.Debug = &cConfig.Debug{
 		DisableDecoyLoops: true,
-		PollingInterval: 10,
+		PollingInterval:   10,
 	}
 
 	// authority section
