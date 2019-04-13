@@ -26,6 +26,8 @@ import (
 	"log"
 	"net/textproto"
 	"os"
+	"os/exec"
+	"path"
 	"path/filepath"
 	"sync"
 	"time"
@@ -166,6 +168,11 @@ func (k *Kimchi) initConfig() error {
 		if err = k.genNodeConfig(true, k.voting); err != nil {
 			log.Fatalf("Failed to generate provider config: %v", err)
 		}
+	}
+
+	err = k.buildMemspool()
+	if err != nil {
+		panic(err)
 	}
 
 	// Generate the node configs.
@@ -333,6 +340,11 @@ func (k *Kimchi) votingPeers() []*sConfig.Peer {
 	return peers
 }
 
+func (k *Kimchi) buildMemspool() error {
+	cmd := exec.Command("go", "build", "-o", path.Join(k.baseDir, "memspool"), path.Join(os.Getenv("GOPATH"), "src/github.com/katzenpost/memspool"))
+	return cmd.Run()
+}
+
 func (k *Kimchi) genNodeConfig(isProvider bool, isVoting bool) error {
 	const serverLogFile = "katzenpost.log"
 
@@ -398,6 +410,17 @@ func (k *Kimchi) genNodeConfig(isProvider bool, isVoting bool) error {
 		keysvrCfg.Capability = "keyserver"
 		keysvrCfg.Endpoint = "+keyserver"
 		cfg.Provider.Kaetzchen = append(cfg.Provider.Kaetzchen, keysvrCfg)
+
+		spoolCfg := new(sConfig.CBORPluginKaetzchen)
+		spoolCfg.Capability = "spool"
+		spoolCfg.Endpoint = "+spool"
+		spoolCfg.Command = path.Join(k.baseDir, "memspool")
+		spoolCfg.Config = map[string]interface{}{
+			"log_dir": k.baseDir,
+		}
+		spoolCfg.MaxConcurrency = 1
+		spoolCfg.Disable = false
+		cfg.Provider.CBORPluginKaetzchen = append(cfg.Provider.CBORPluginKaetzchen, spoolCfg)
 	} else {
 		k.nodeIdx++
 	}
