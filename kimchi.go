@@ -341,7 +341,7 @@ func (k *Kimchi) votingPeers() []*sConfig.Peer {
 }
 
 func (k *Kimchi) buildMemspool() error {
-	cmd := exec.Command("go", "build", "-o", path.Join(k.baseDir, "memspool"), path.Join(os.Getenv("GOPATH"), "src/github.com/katzenpost/memspool"))
+	cmd := exec.Command("go", "build", "-o", path.Join(k.baseDir, "memspool"), path.Join(os.Getenv("GOPATH"), "src/github.com/katzenpost/memspool/server"))
 	return cmd.Run()
 }
 
@@ -416,7 +416,8 @@ func (k *Kimchi) genNodeConfig(isProvider bool, isVoting bool) error {
 		spoolCfg.Endpoint = "+spool"
 		spoolCfg.Command = path.Join(k.baseDir, "memspool")
 		spoolCfg.Config = map[string]interface{}{
-			"log_dir": k.baseDir,
+			"log_dir":    k.baseDir,
+			"data_store": path.Join(k.baseDir, "memspool.storage"),
 		}
 		spoolCfg.MaxConcurrency = 1
 		spoolCfg.Disable = false
@@ -648,13 +649,9 @@ func (k *Kimchi) runWithDelayedAuthority(delay time.Duration) {
 	}()
 }
 
-func (k *Kimchi) GetClientConfig() (*cConfig.Config, error) {
+func (k *Kimchi) GetClientConfig() (*cConfig.Config, string, *ecdh.PrivateKey, error) {
 	cfg := new(cConfig.Config)
 	m := rand.NewMath()
-	cfg.Proxy = &cConfig.Proxy{DataDir: filepath.Join(k.baseDir, fmt.Sprintf("client%d", m.Intn(1<<32)))}
-	if err := os.Mkdir(cfg.Proxy.DataDir, 0700); err != nil {
-		return nil, err
-	}
 	cfg.Logging = &cConfig.Logging{
 		Disable: false,
 		File:    "katzenpost.log",
@@ -670,7 +667,7 @@ func (k *Kimchi) GetClientConfig() (*cConfig.Config, error) {
 	if k.voting {
 		p, err := sConfig.AuthorityPeersFromPeers(k.votingPeers())
 		if err != nil {
-			return nil, err
+			return nil, "", nil, err
 		}
 		cfg.VotingAuthority = &cConfig.VotingAuthority{
 			Peers: p,
@@ -686,7 +683,7 @@ func (k *Kimchi) GetClientConfig() (*cConfig.Config, error) {
 
 	// select a username for the user
 	usernames := []string{"alice", "bob", "mallory"}
-	cfg.Account.User = fmt.Sprintf("%s%d", usernames[m.Intn(len(usernames))], m.Intn(255))
+	username := fmt.Sprintf("%s%d", usernames[m.Intn(len(usernames))], m.Intn(255))
 
 	// find a provider
 	for _, nCfg := range k.nodeConfigs {
@@ -695,24 +692,22 @@ func (k *Kimchi) GetClientConfig() (*cConfig.Config, error) {
 			cfg.Account.ProviderKeyPin = nCfg.Debug.IdentityKey.PublicKey()
 
 			// Generate keys for the account
-			if err := cConfig.GenerateKeys(cfg); err != nil {
-				return nil, err
+			linkKey, err := ecdh.NewKeypair(m)
+			if err != nil {
+				return nil, "", nil, err
 			}
 			if err := cfg.FixupAndValidate(); err != nil {
-				return nil, err
+				return nil, "", nil, err
 			}
 
 			// register the account on the provider
-			id := cfg.Account.User + "@" + nCfg.Server.Identifier
-			if linkKey, err := cConfig.LoadLinkKey(filepath.Join(cfg.Proxy.DataDir, id)); err != nil {
-				return nil, err
-			} else if err := k.thwackUser(nCfg, cfg.Account.User, linkKey.PublicKey()); err != nil {
-				return nil, err
+			if err := k.thwackUser(nCfg, username, linkKey.PublicKey()); err != nil {
+				return nil, "", nil, err
 			}
-			return cfg, nil
+			return cfg, username, linkKey, nil
 		}
 	}
-	return nil, errors.New("no providers found")
+	return nil, "", nil, errors.New("no providers found")
 }
 
 func retry(p pki.Client, epoch uint64, retries int) (reply []byte, err error) {
