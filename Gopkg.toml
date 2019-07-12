@@ -27,11 +27,27 @@ required = ["github.com/coreos/bbolt"]
   version = "v0.0.7"
   name = "github.com/katzenpost/server"
 
-# other stuff
+# pin deps
 
 [[override]]
   name = "github.com/BurntSushi/toml"
   version = "0.3.0"
+
+[[override]]
+  name = "github.com/ugorji/go"
+  version = "1.1.1"
+
+[[override]]
+  name = "github.com/jackc/pgx"
+  version = "=3.3.0"
+
+[[constraint]]
+  name = "github.com/stretchr/testify"
+  version = "1.3.0"
+
+[[constraint]]
+  name = "gopkg.in/op/go-logging.v1"
+  version = "1.0.0"
 
 [[override]]
   name = "github.com/abiosoft/ishell"
@@ -42,12 +58,10 @@ required = ["github.com/coreos/bbolt"]
   version = "1.7.0"
 
 [[override]]
-  name = "github.com/ugorji/go"
-  version = "1.1.1"
-
-[[override]]
   revision = "a1dbeea552b7c8df4b542c66073e393de198a800"
   name = "github.com/hpcloud/tail"
+
+
 
 [prune]
   go-tests = true
