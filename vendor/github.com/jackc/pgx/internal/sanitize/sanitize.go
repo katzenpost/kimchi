@@ -87,7 +87,7 @@ func QuoteString(str string) string {
 }
 
 func QuoteBytes(buf []byte) string {
-	return `'\x` + hex.EncodeToString(buf) + "'::bytea"
+	return `'\x` + hex.EncodeToString(buf) + "'"
 }
 
 type sqlLexer struct {
