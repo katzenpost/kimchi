@@ -52,7 +52,6 @@ import (
 
 const (
 	logFile  = "kimchi.log"
-	basePort = 30000
 )
 
 var tailConfig = tail.Config{
@@ -79,6 +78,7 @@ type Kimchi struct {
 
 	nodeConfigs []*sConfig.Config
 	lastPort    uint16
+	authPort    uint16
 	nodeIdx     int
 	providerIdx int
 
@@ -103,7 +103,8 @@ func NewKimchi(basePort int, baseDir string, parameters *Parameters, voting bool
 		parameters = &Parameters{}
 	}
 	k := &Kimchi{
-		lastPort:    uint16(basePort + 1),
+		lastPort:    uint16(basePort),
+		authPort:    uint16(basePort),
 		recipients:  make(map[string]*ecdh.PublicKey),
 		nodeConfigs: make([]*sConfig.Config, 0),
 		voting:      voting,
@@ -382,7 +383,7 @@ func (k *Kimchi) genNodeConfig(isProvider bool, isVoting bool) error {
 	} else {
 		cfg.PKI = new(sConfig.PKI)
 		cfg.PKI.Nonvoting = new(sConfig.Nonvoting)
-		cfg.PKI.Nonvoting.Address = fmt.Sprintf("127.0.0.1:%d", basePort)
+		cfg.PKI.Nonvoting.Address = fmt.Sprintf("127.0.0.1:%d", k.authPort)
 		if k.authIdentity == nil {
 		}
 		idKey, err := k.authIdentity.PublicKey().MarshalText()
@@ -452,7 +453,8 @@ func (k *Kimchi) genAuthConfig() error {
 
 	// Authority section.
 	cfg.Authority = new(aConfig.Authority)
-	cfg.Authority.Addresses = []string{fmt.Sprintf("127.0.0.1:%d", basePort)}
+	cfg.Authority.Addresses = []string{fmt.Sprintf("127.0.0.1:%d", k.lastPort)}
+	k.lastPort++
 	cfg.Authority.DataDir = filepath.Join(k.baseDir, "authority")
 
 	// Parameters section.
