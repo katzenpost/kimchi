@@ -342,7 +342,8 @@ func (k *Kimchi) votingPeers() []*sConfig.Peer {
 }
 
 func (k *Kimchi) buildMemspool() error {
-	cmd := exec.Command("go", "build", "-o", path.Join(k.baseDir, "memspool"), path.Join(os.Getenv("GOPATH"), "src/github.com/katzenpost/memspool/server"))
+	cmd := exec.Command("go", "build", "-o", path.Join(k.baseDir, "memspool"))
+	cmd.Dir = path.Join(os.Getenv("GOPATH"), "src/github.com/katzenpost/memspool/server")
 	return cmd.Run()
 }
 
