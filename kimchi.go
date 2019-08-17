@@ -417,8 +417,8 @@ func (k *Kimchi) genNodeConfig(isProvider bool, isVoting bool) error {
 		spoolCfg.Endpoint = "+spool"
 		spoolCfg.Command = path.Join(k.baseDir, "memspool")
 		spoolCfg.Config = map[string]interface{}{
-			"log_dir":    k.baseDir,
-			"data_store": path.Join(k.baseDir, "memspool.storage"),
+			"log_dir":    path.Join(k.baseDir, n),
+			"data_store": path.Join(k.baseDir, n, "memspool.storage"),
 		}
 		spoolCfg.MaxConcurrency = 1
 		spoolCfg.Disable = false
