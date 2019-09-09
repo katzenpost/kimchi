@@ -51,7 +51,7 @@ import (
 )
 
 const (
-	logFile  = "kimchi.log"
+	logFile = "kimchi.log"
 )
 
 var tailConfig = tail.Config{
@@ -662,8 +662,8 @@ func (k *Kimchi) GetClientConfig() (*cConfig.Config, string, *ecdh.PrivateKey, e
 	}
 	cfg.UpstreamProxy = &cConfig.UpstreamProxy{Type: "none"}
 	cfg.Debug = &cConfig.Debug{
-		DisableDecoyLoops: true,
-		PollingInterval:   10,
+		DisableDecoyTraffic: true,
+		PollingInterval:     10,
 	}
 
 	// authority section
