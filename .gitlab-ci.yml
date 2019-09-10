@@ -10,8 +10,6 @@ before_script:
 
 kimchi:
   script:
-    - GO111MODULE=off go get github.com/katzenpost/core
-    - GO111MODULE=off go get github.com/katzenpost/server
     - go get github.com/katzenpost/core
     - go get github.com/katzenpost/server
     - go test -v -cover -race -timeout 0 -ldflags "-X $GOPATH/src/github.com/katzenpost/core/epochtime.WarpedEpoch=true -X $GOPATH/src/github.com/katzenpost/server/internal/pki.WarpedEpoch=true" ./...
