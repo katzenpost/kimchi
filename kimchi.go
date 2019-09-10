@@ -216,6 +216,30 @@ func (k *Kimchi) runAuthority() {
 	}
 }
 
+// Shutdown an authority
+func (k *Kimchi) KillAnAuth() bool {
+	for _, svr := range k.servers {
+		switch svr.(type) {
+		case *aServer.Server:
+			svr.Shutdown()
+			return true
+		}
+	}
+	return false
+}
+
+// Shutdown a mix
+func (k *Kimchi) KillAMix() bool {
+	for _, svr := range k.servers {
+		switch svr.(type) {
+		case *sServer.Server:
+			svr.Shutdown()
+			return true
+		}
+	}
+	return false
+}
+
 func (k *Kimchi) PKIClient() (pki.Client, error) {
 	b, err := klog.New("", "DEBUG", false)
 	if err != nil {
