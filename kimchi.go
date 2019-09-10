@@ -27,6 +27,7 @@ import (
 	"net/textproto"
 	"os"
 	"path"
+	"os/exec"
 	"path/filepath"
 	"sync"
 	"time"
@@ -426,17 +427,21 @@ func (k *Kimchi) genNodeConfig(isProvider bool, isVoting bool) error {
 		keysvrCfg.Endpoint = "+keyserver"
 		cfg.Provider.Kaetzchen = append(cfg.Provider.Kaetzchen, keysvrCfg)
 
-		spoolCfg := new(sConfig.CBORPluginKaetzchen)
-		spoolCfg.Capability = "spool"
-		spoolCfg.Endpoint = "+spool"
-		spoolCfg.Command = "memspool" // must be in $PATH!
-		spoolCfg.Config = map[string]interface{}{
-			"log_dir":    path.Join(k.baseDir, n),
-			"data_store": path.Join(k.baseDir, n, "memspool.storage"),
-		}
-		spoolCfg.MaxConcurrency = 1
-		spoolCfg.Disable = false
-		cfg.Provider.CBORPluginKaetzchen = append(cfg.Provider.CBORPluginKaetzchen, spoolCfg)
+		// Enable memspool service, if available.
+		memspool_bin, err := exec.LookPath("memspool")
+		if err == nil {
+			spoolCfg := new(sConfig.CBORPluginKaetzchen)
+			spoolCfg.Capability = "spool"
+			spoolCfg.Endpoint = "+spool"
+			spoolCfg.Command = memspool_bin
+			spoolCfg.Config = map[string]interface{}{
+				"log_dir":    path.Join(k.baseDir, n),
+				"data_store": path.Join(k.baseDir, n, "memspool.storage"),
+			}
+			spoolCfg.MaxConcurrency = 1
+			spoolCfg.Disable = false
+			cfg.Provider.CBORPluginKaetzchen = append(cfg.Provider.CBORPluginKaetzchen, spoolCfg)
+		} // memspool not available
 	} else {
 		k.nodeIdx++
 	}
@@ -444,7 +449,7 @@ func (k *Kimchi) genNodeConfig(isProvider bool, isVoting bool) error {
 	k.lastPort++
 	err = cfg.FixupAndValidate()
 	if err != nil {
-		return errors.New("genNodeConfig failure on fixupandvalidate")
+		return err
 	}
 	return nil
 }
