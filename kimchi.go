@@ -26,8 +26,8 @@ import (
 	"log"
 	"net/textproto"
 	"os"
-	"os/exec"
 	"path"
+	"os/exec"
 	"path/filepath"
 	"sync"
 	"time"
@@ -35,6 +35,7 @@ import (
 	"github.com/hpcloud/tail"
 	nvClient "github.com/katzenpost/authority/nonvoting/client"
 	aServer "github.com/katzenpost/authority/nonvoting/server"
+	sServer "github.com/katzenpost/server"
 	aConfig "github.com/katzenpost/authority/nonvoting/server/config"
 	vClient "github.com/katzenpost/authority/voting/client"
 	vServer "github.com/katzenpost/authority/voting/server"
@@ -171,11 +172,6 @@ func (k *Kimchi) initConfig() error {
 		}
 	}
 
-	err = k.buildMemspool()
-	if err != nil {
-		panic(err)
-	}
-
 	// Generate the node configs.
 	for i := 0; i < k.nMix; i++ {
 		if err = k.genNodeConfig(false, k.voting); err != nil {
@@ -214,6 +210,30 @@ func (k *Kimchi) runAuthority() {
 	if err != nil {
 		panic(err)
 	}
+}
+
+// Shutdown an authority
+func (k *Kimchi) KillAnAuth() bool {
+	for _, svr := range k.servers {
+		switch svr.(type) {
+		case *aServer.Server:
+			svr.Shutdown()
+			return true
+		}
+	}
+	return false
+}
+
+// Shutdown a mix
+func (k *Kimchi) KillAMix() bool {
+	for _, svr := range k.servers {
+		switch svr.(type) {
+		case *sServer.Server:
+			svr.Shutdown()
+			return true
+		}
+	}
+	return false
 }
 
 func (k *Kimchi) PKIClient() (pki.Client, error) {
@@ -341,12 +361,6 @@ func (k *Kimchi) votingPeers() []*sConfig.Peer {
 	return peers
 }
 
-func (k *Kimchi) buildMemspool() error {
-	cmd := exec.Command("go", "build", "-o", path.Join(k.baseDir, "memspool"))
-	cmd.Dir = path.Join(os.Getenv("GOPATH"), "src/github.com/katzenpost/memspool/server")
-	return cmd.Run()
-}
-
 func (k *Kimchi) genNodeConfig(isProvider bool, isVoting bool) error {
 	const serverLogFile = "katzenpost.log"
 
@@ -413,17 +427,21 @@ func (k *Kimchi) genNodeConfig(isProvider bool, isVoting bool) error {
 		keysvrCfg.Endpoint = "+keyserver"
 		cfg.Provider.Kaetzchen = append(cfg.Provider.Kaetzchen, keysvrCfg)
 
-		spoolCfg := new(sConfig.CBORPluginKaetzchen)
-		spoolCfg.Capability = "spool"
-		spoolCfg.Endpoint = "+spool"
-		spoolCfg.Command = path.Join(k.baseDir, "memspool")
-		spoolCfg.Config = map[string]interface{}{
-			"log_dir":    path.Join(k.baseDir, n),
-			"data_store": path.Join(k.baseDir, n, "memspool.storage"),
-		}
-		spoolCfg.MaxConcurrency = 1
-		spoolCfg.Disable = false
-		cfg.Provider.CBORPluginKaetzchen = append(cfg.Provider.CBORPluginKaetzchen, spoolCfg)
+		// Enable memspool service, if available.
+		memspool_bin, err := exec.LookPath("memspool")
+		if err == nil {
+			spoolCfg := new(sConfig.CBORPluginKaetzchen)
+			spoolCfg.Capability = "spool"
+			spoolCfg.Endpoint = "+spool"
+			spoolCfg.Command = memspool_bin
+			spoolCfg.Config = map[string]interface{}{
+				"log_dir":    path.Join(k.baseDir, n),
+				"data_store": path.Join(k.baseDir, n, "memspool.storage"),
+			}
+			spoolCfg.MaxConcurrency = 1
+			spoolCfg.Disable = false
+			cfg.Provider.CBORPluginKaetzchen = append(cfg.Provider.CBORPluginKaetzchen, spoolCfg)
+		} // memspool not available
 	} else {
 		k.nodeIdx++
 	}
@@ -431,7 +449,7 @@ func (k *Kimchi) genNodeConfig(isProvider bool, isVoting bool) error {
 	k.lastPort++
 	err = cfg.FixupAndValidate()
 	if err != nil {
-		return errors.New("genNodeConfig failure on fixupandvalidate")
+		return err
 	}
 	return nil
 }
