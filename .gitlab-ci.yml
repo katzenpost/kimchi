@@ -1,8 +1,10 @@
 image: "golang:1.13"
 
 before_script:
-  - cp -r /builds/katzenpost/* /go/src/github.com/katzenpost/
-  - cd /go/src/github.com/katzenpost/kimchi
+  - git clone https://github.com/katzenpost/memspool
+  - cd memspool/server/cmd/memspool
+  - go install
+  - cd /builds/katzenpost/kimchi/
 
 kimchi:
   script:
