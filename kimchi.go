@@ -26,7 +26,6 @@ import (
 	"log"
 	"net/textproto"
 	"os"
-	"os/exec"
 	"path"
 	"path/filepath"
 	"sync"
@@ -35,6 +34,7 @@ import (
 	"github.com/hpcloud/tail"
 	nvClient "github.com/katzenpost/authority/nonvoting/client"
 	aServer "github.com/katzenpost/authority/nonvoting/server"
+	sServer "github.com/katzenpost/server"
 	aConfig "github.com/katzenpost/authority/nonvoting/server/config"
 	vClient "github.com/katzenpost/authority/voting/client"
 	vServer "github.com/katzenpost/authority/voting/server"
@@ -169,11 +169,6 @@ func (k *Kimchi) initConfig() error {
 		if err = k.genNodeConfig(true, k.voting); err != nil {
 			log.Fatalf("Failed to generate provider config: %v", err)
 		}
-	}
-
-	err = k.buildMemspool()
-	if err != nil {
-		panic(err)
 	}
 
 	// Generate the node configs.
@@ -365,12 +360,6 @@ func (k *Kimchi) votingPeers() []*sConfig.Peer {
 	return peers
 }
 
-func (k *Kimchi) buildMemspool() error {
-	cmd := exec.Command("go", "build", "-o", path.Join(k.baseDir, "memspool"))
-	cmd.Dir = path.Join(os.Getenv("GOPATH"), "src/github.com/katzenpost/memspool/server")
-	return cmd.Run()
-}
-
 func (k *Kimchi) genNodeConfig(isProvider bool, isVoting bool) error {
 	const serverLogFile = "katzenpost.log"
 
@@ -440,7 +429,7 @@ func (k *Kimchi) genNodeConfig(isProvider bool, isVoting bool) error {
 		spoolCfg := new(sConfig.CBORPluginKaetzchen)
 		spoolCfg.Capability = "spool"
 		spoolCfg.Endpoint = "+spool"
-		spoolCfg.Command = path.Join(k.baseDir, "memspool")
+		spoolCfg.Command = "memspool" // must be in $PATH!
 		spoolCfg.Config = map[string]interface{}{
 			"log_dir":    path.Join(k.baseDir, n),
 			"data_store": path.Join(k.baseDir, n, "memspool.storage"),
