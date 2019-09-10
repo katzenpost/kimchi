@@ -26,8 +26,8 @@ import (
 	"log"
 	"net/textproto"
 	"os"
-	"os/exec"
-	"path"
+	//"os/exec"
+	//"path"
 	"path/filepath"
 	"sync"
 	"time"
@@ -99,6 +99,7 @@ type Parameters struct {
 
 // NewKimchi returns an initialized kimchi
 func NewKimchi(basePort int, baseDir string, parameters *Parameters, voting bool, nVoting, nProvider, nMix int) *Kimchi {
+
 	if parameters == nil {
 		parameters = &Parameters{}
 	}
@@ -171,10 +172,10 @@ func (k *Kimchi) initConfig() error {
 		}
 	}
 
-	err = k.buildMemspool()
-	if err != nil {
-		panic(err)
-	}
+	//err = k.buildMemspool()
+	//if err != nil {
+	//	panic(err)
+	//}
 
 	// Generate the node configs.
 	for i := 0; i < k.nMix; i++ {
@@ -341,12 +342,12 @@ func (k *Kimchi) votingPeers() []*sConfig.Peer {
 	return peers
 }
 
+/*
 func (k *Kimchi) buildMemspool() error {
-	cmd := exec.Command("go", "build", "-o", path.Join(k.baseDir, "memspool"))
-	cmd.Dir = path.Join(os.Getenv("GOPATH"), "src/github.com/katzenpost/memspool/server")
+	cmd := exec.Command("go", "build")
 	return cmd.Run()
 }
-
+*/
 func (k *Kimchi) genNodeConfig(isProvider bool, isVoting bool) error {
 	const serverLogFile = "katzenpost.log"
 
@@ -413,17 +414,19 @@ func (k *Kimchi) genNodeConfig(isProvider bool, isVoting bool) error {
 		keysvrCfg.Endpoint = "+keyserver"
 		cfg.Provider.Kaetzchen = append(cfg.Provider.Kaetzchen, keysvrCfg)
 
-		spoolCfg := new(sConfig.CBORPluginKaetzchen)
-		spoolCfg.Capability = "spool"
-		spoolCfg.Endpoint = "+spool"
-		spoolCfg.Command = path.Join(k.baseDir, "memspool")
-		spoolCfg.Config = map[string]interface{}{
-			"log_dir":    path.Join(k.baseDir, n),
-			"data_store": path.Join(k.baseDir, n, "memspool.storage"),
-		}
-		spoolCfg.MaxConcurrency = 1
-		spoolCfg.Disable = false
-		cfg.Provider.CBORPluginKaetzchen = append(cfg.Provider.CBORPluginKaetzchen, spoolCfg)
+		/*
+				spoolCfg := new(sConfig.CBORPluginKaetzchen)
+				spoolCfg.Capability = "spool"
+				spoolCfg.Endpoint = "+spool"
+				spoolCfg.Command = path.Join(k.baseDir, "memspool")
+				spoolCfg.Config = map[string]interface{}{
+					"log_dir":    path.Join(k.baseDir, n),
+					"data_store": path.Join(k.baseDir, n, "memspool.storage"),
+				}
+			spoolCfg.MaxConcurrency = 1
+			spoolCfg.Disable = false
+			cfg.Provider.CBORPluginKaetzchen = append(cfg.Provider.CBORPluginKaetzchen, spoolCfg)
+		*/
 	} else {
 		k.nodeIdx++
 	}
