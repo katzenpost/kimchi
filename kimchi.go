@@ -26,8 +26,8 @@ import (
 	"log"
 	"net/textproto"
 	"os"
-	"path"
 	"os/exec"
+	"path"
 	"path/filepath"
 	"sync"
 	"time"
@@ -35,7 +35,6 @@ import (
 	"github.com/hpcloud/tail"
 	nvClient "github.com/katzenpost/authority/nonvoting/client"
 	aServer "github.com/katzenpost/authority/nonvoting/server"
-	sServer "github.com/katzenpost/server"
 	aConfig "github.com/katzenpost/authority/nonvoting/server/config"
 	vClient "github.com/katzenpost/authority/voting/client"
 	vServer "github.com/katzenpost/authority/voting/server"
@@ -48,6 +47,7 @@ import (
 	"github.com/katzenpost/core/pki"
 	"github.com/katzenpost/core/thwack"
 	nServer "github.com/katzenpost/server"
+	sServer "github.com/katzenpost/server"
 	sConfig "github.com/katzenpost/server/config"
 )
 
@@ -725,6 +725,7 @@ func (k *Kimchi) GetClientConfig() (*cConfig.Config, string, *ecdh.PrivateKey, e
 			if err := k.thwackUser(nCfg, username, linkKey.PublicKey()); err != nil {
 				return nil, "", nil, err
 			}
+			cfg.Account.User = username
 			return cfg, username, linkKey, nil
 		}
 	}
