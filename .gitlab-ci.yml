@@ -1,11 +1,9 @@
-image: "golang:1.11"
+image: "golang:1.13"
 
 before_script:
-  - go get -u github.com/golang/dep/cmd/dep
-  - cp -r /builds/katzenpost /go/src/github.com/katzenpost/
+  - cp -r /builds/katzenpost/* /go/src/github.com/katzenpost/
   - cd /go/src/github.com/katzenpost/kimchi
-  - dep ensure
 
 kimchi:
   script:
-    - go test -v -cover -race -timeout 0 -ldflags "-X github.com/katzenpost/kimchi/vendor/github.com/katzenpost/core/epochtime.WarpedEpoch=true -X github.com/katzenpost/kimchi/vendor/github.com/katzenpost/server/internal/pki.WarpedEpoch=true" ./...
+    - go test -v -cover -race  ./...
