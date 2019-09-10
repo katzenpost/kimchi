@@ -637,7 +637,7 @@ func (k *Kimchi) Shutdown() {
 	log.Printf("Terminated.")
 }
 
-func (k *Kimchi) runWithDelayedAuthority(delay time.Duration) {
+func (k *Kimchi) RunWithDelayedAuthority(delay time.Duration) {
 	// Launch all the nodes.
 	for _, v := range k.nodeConfigs {
 		v.FixupAndValidate()
