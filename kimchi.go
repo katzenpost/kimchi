@@ -216,7 +216,7 @@ func (k *Kimchi) runAuthority() {
 func (k *Kimchi) KillAnAuth() bool {
 	for _, svr := range k.servers {
 		switch svr.(type) {
-		case *aServer.Server:
+		case *vServer.Server:
 			svr.Shutdown()
 			return true
 		}
