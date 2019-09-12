@@ -427,6 +427,11 @@ func (k *Kimchi) genNodeConfig(isProvider bool, isVoting bool) error {
 		keysvrCfg.Endpoint = "+keyserver"
 		cfg.Provider.Kaetzchen = append(cfg.Provider.Kaetzchen, keysvrCfg)
 
+		// Enable HTTP user registration.
+		k.lastPort++
+		cfg.Provider.EnableUserRegistrationHTTP = true
+		cfg.Provider.UserRegistrationHTTPAddresses = []string{fmt.Sprintf("127.0.0.1:%v", k.lastPort)}
+
 		// Enable memspool service, if available.
 		memspool_bin, err := exec.LookPath("memspool")
 		if err == nil {
@@ -709,8 +714,11 @@ func (k *Kimchi) GetClientConfig() (*cConfig.Config, string, *ecdh.PrivateKey, e
 	// find a provider
 	for _, nCfg := range k.nodeConfigs {
 		if nCfg.Server.IsProvider {
+			cfg.Account.User = username
 			cfg.Account.Provider = nCfg.Server.Identifier
 			cfg.Account.ProviderKeyPin = nCfg.Debug.IdentityKey.PublicKey()
+			cfg.Registration = &cConfig.Registration{} // not used
+			cfg.Registration.Address = nCfg.Provider.UserRegistrationHTTPAddresses[0]
 
 			// Generate keys for the account
 			linkKey, err := ecdh.NewKeypair(m)
@@ -725,7 +733,6 @@ func (k *Kimchi) GetClientConfig() (*cConfig.Config, string, *ecdh.PrivateKey, e
 			if err := k.thwackUser(nCfg, username, linkKey.PublicKey()); err != nil {
 				return nil, "", nil, err
 			}
-			cfg.Account.User = username
 			return cfg, username, linkKey, nil
 		}
 	}

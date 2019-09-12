@@ -17,10 +17,40 @@
 package kimchi_test
 import (
 	ki "github.com/katzenpost/kimchi"
+	"github.com/stretchr/testify/require"
 	"testing"
 )
 
 const basePort = 42000
+
+// TestGetClientConfig tests that a client configuration can be generated correctly
+func TestGetClientConfig(t *testing.T) {
+	require := require.New(t)
+	voting := false
+	nVoting := 0
+	nProvider := 2
+	nMix := 6
+	k := ki.NewKimchi(basePort+50, "", nil, voting, nVoting, nProvider, nMix)
+	t.Logf("Launching nonvoting authority and calling GetClientConfig()")
+	k.Run()
+
+	go func() {
+		defer k.Shutdown()
+		cfg, username, privkey, err := k.GetClientConfig()
+		t.Logf("c: %v u: %v k: %v", cfg, username, privkey)
+		require.Nil(err)
+
+		if err != nil {
+			panic(err)
+		}
+		t.Logf("Received shutdown request.")
+		t.Logf("All servers halted.")
+	}()
+
+	k.Wait()
+	t.Logf("Terminated.")
+
+}
 
 // TestBootstrapNonvoting tests that the nonvoting authority bootstraps and provides a consensus document
 func TestBootstrapNonvoting(t *testing.T) {
@@ -41,5 +71,3 @@ func TestBootstrapNonvoting(t *testing.T) {
 	k.Wait()
 	t.Logf("Terminated.")
 }
-
-
