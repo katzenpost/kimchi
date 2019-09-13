@@ -676,11 +676,16 @@ func (k *Kimchi) RunWithDelayedAuthority(delay time.Duration) {
 }
 
 func (k *Kimchi) GetClientConfig() (*cConfig.Config, string, *ecdh.PrivateKey, error) {
-	cfg := new(cConfig.Config)
+
+	// select a username for the user
 	m := rand.NewMath()
+	usernames := []string{"alice", "bob", "mallory"}
+	username := fmt.Sprintf("%s%d", usernames[m.Intn(len(usernames))], m.Intn(255))
+
+	cfg := new(cConfig.Config)
 	cfg.Logging = &cConfig.Logging{
 		Disable: false,
-		File:    "katzenpost.log",
+		File:    filepath.Join(k.baseDir, username+".log"),
 		Level:   "DEBUG",
 	}
 	cfg.UpstreamProxy = &cConfig.UpstreamProxy{Type: "none"}
@@ -706,11 +711,6 @@ func (k *Kimchi) GetClientConfig() (*cConfig.Config, string, *ecdh.PrivateKey, e
 	}
 
 	cfg.Account = &cConfig.Account{}
-
-	// select a username for the user
-	usernames := []string{"alice", "bob", "mallory"}
-	username := fmt.Sprintf("%s%d", usernames[m.Intn(len(usernames))], m.Intn(255))
-
 	// find a provider
 	for _, nCfg := range k.nodeConfigs {
 		if nCfg.Server.IsProvider {
