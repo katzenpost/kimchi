@@ -19,6 +19,7 @@ import (
 	ki "github.com/katzenpost/kimchi"
 	"github.com/stretchr/testify/require"
 	"testing"
+	"time"
 )
 
 const basePort = 42000
@@ -26,48 +27,81 @@ const basePort = 42000
 // TestGetClientConfig tests that a client configuration can be generated correctly
 func TestGetClientConfig(t *testing.T) {
 	require := require.New(t)
-	voting := false
-	nVoting := 0
+	nVoting := 3
 	nProvider := 2
 	nMix := 6
-	k := ki.NewKimchi(basePort+50, "", nil, voting, nVoting, nProvider, nMix)
-	t.Logf("Launching nonvoting authority and calling GetClientConfig()")
-	k.Run()
+	for _, v := range([]bool{true, false}) {
+		k := ki.NewKimchi(basePort+50, "", nil, v, nVoting, nProvider, nMix)
+		t.Logf("Launching nonvoting authority and calling GetClientConfig()")
+		k.Run()
 
-	go func() {
-		defer k.Shutdown()
-		cfg, username, privkey, err := k.GetClientConfig()
-		t.Logf("c: %v u: %v k: %v", cfg, username, privkey)
-		require.Nil(err)
+		go func() {
+			defer k.Shutdown()
+			cfg, username, privkey, err := k.GetClientConfig()
+			t.Logf("c: %v u: %v k: %v", cfg, username, privkey)
+			require.Nil(err)
 
-		if err != nil {
-			panic(err)
-		}
-		t.Logf("Received shutdown request.")
-		t.Logf("All servers halted.")
-	}()
+			if err != nil {
+				panic(err)
+			}
+			t.Logf("Received shutdown request.")
+			t.Logf("All servers halted.")
+		}()
 
-	k.Wait()
-	t.Logf("Terminated.")
+		k.Wait()
+		t.Logf("Terminated.")
+	}
 
 }
 
-// TestBootstrapNonvoting tests that the nonvoting authority bootstraps and provides a consensus document
-func TestBootstrapNonvoting(t *testing.T) {
+// TestRunNonvoting tests Kimchi.Run with a nonvoting directory authority configuration
+func TestRunNonvoting(t *testing.T) {
 	voting := false
 	nVoting := 0
 	nProvider := 2
 	nMix := 6
 	k := ki.NewKimchi(basePort+50, "", nil, voting, nVoting, nProvider, nMix)
-	t.Logf("Running Bootstrap Nonvoting mixnet.")
+	t.Logf("Running Nonvoting mixnet.")
 	k.Run()
-
-	go func() {
-		defer k.Shutdown()
-		t.Logf("Received shutdown request.")
-		t.Logf("All servers halted.")
-	}()
-
+	<-time.After(60 * time.Second) // run for a short duration. See authority repository for other tests
+	k.Shutdown()
+	t.Logf("Received shutdown request.")
 	k.Wait()
+	t.Logf("All servers halted.")
+	t.Logf("Terminated.")
+}
+
+// TestNewKimchi tests NewKimchi()
+func TestNewKimchi(t *testing.T) {
+	voting := false
+	require := require.New(t)
+	nVoting := 0
+	nProvider := 2
+	nMix := 6
+	// Voting
+	k := ki.NewKimchi(basePort+50, "", nil, voting, nVoting, nProvider, nMix)
+	require.NotNil(k)
+
+	// Nonvoting
+	k = ki.NewKimchi(basePort+100, "", nil, !voting, 0, nProvider, nMix)
+	require.NotNil(k)
+}
+
+// TestRunVoting tests Kimchi.Run with a voting directory authority configuration
+func TestRunVoting(t *testing.T) {
+	require := require.New(t)
+	voting := true
+	nVoting := 3
+	nProvider := 2
+	nMix := 6
+	k := ki.NewKimchi(basePort+100, "", nil, voting, nVoting, nProvider, nMix)
+	require.NotNil(k)
+	t.Logf("Running Voting mixnet.")
+	k.Run()
+	<-time.After(60 * time.Second) // run for a short duration. See authority repository for other tests
+	k.Shutdown()
+	t.Logf("Received shutdown request.")
+	k.Wait()
+	t.Logf("All servers halted.")
 	t.Logf("Terminated.")
 }
