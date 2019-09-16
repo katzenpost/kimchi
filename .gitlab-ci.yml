@@ -8,4 +8,9 @@ before_script:
 
 kimchi:
   script:
-    - go test -v -cover -race  ./...
+    - mkdir -p coverage
+    - go test -v -cover -coverprofile cover.out -covermode atomic -race  ./...
+    - go tool cover -html=cover.out -o coverage/coverage.html
+  artifacts:
+    paths:
+      - coverage/
