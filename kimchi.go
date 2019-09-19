@@ -713,7 +713,11 @@ func (k *Kimchi) GetClientNetconfig() (*cConfig.Config, error) {
 			PublicKey: k.authIdentity.PublicKey(),
 		}
 	}
-	return cfg, nil
+	if err := cfg.FixupAndMinimallyValidate(); err == nil {
+		return cfg, nil
+	} else {
+		return nil, err
+	}
 }
 
 // registerClientAccount creates an account on a provider from the configuration
