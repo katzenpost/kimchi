@@ -431,6 +431,7 @@ func (k *Kimchi) genNodeConfig(isProvider bool, isVoting bool) error {
 		k.lastPort++
 		cfg.Provider.EnableUserRegistrationHTTP = true
 		cfg.Provider.UserRegistrationHTTPAddresses = []string{fmt.Sprintf("127.0.0.1:%v", k.lastPort)}
+		cfg.Provider.AdvertiseUserRegistrationHTTPAddresses = []string{fmt.Sprintf("http://127.0.0.1:%v", k.lastPort)}
 
 		// Enable memspool service, if available.
 		memspool_bin, err := exec.LookPath("memspool")
