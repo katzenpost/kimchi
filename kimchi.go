@@ -675,19 +675,23 @@ func (k *Kimchi) RunWithDelayedAuthority(delay time.Duration) {
 	}()
 }
 
+// GetClientConfig returns a client.Config and configures the client Account
 func (k *Kimchi) GetClientConfig() (*cConfig.Config, string, *ecdh.PrivateKey, error) {
-
-	// select a username for the user
-	m := rand.NewMath()
-	usernames := []string{"alice", "bob", "mallory"}
-	username := fmt.Sprintf("%s%d", usernames[m.Intn(len(usernames))], m.Intn(255))
-
-	cfg := new(cConfig.Config)
-	cfg.Logging = &cConfig.Logging{
-		Disable: false,
-		File:    filepath.Join(k.baseDir, username+".log"),
-		Level:   "DEBUG",
+	if cfg, err := k.GetClientNetconfig(); err == nil {
+		// use thwack to create a random user account and populate the cfg
+		if cfg, privKey, err := k.registerClientAccount(cfg); err == nil {
+			return cfg, cfg.Account.User, privKey, err
+		} else {
+			return nil, "", nil, err
+		}
+	} else {
+		return nil, "", nil, err
 	}
+}
+
+// GetClientNetconfig returns a client.Config populated with PKI information
+func (k *Kimchi) GetClientNetconfig() (*cConfig.Config, error) {
+	cfg := new(cConfig.Config)
 	cfg.UpstreamProxy = &cConfig.UpstreamProxy{Type: "none"}
 	cfg.Debug = &cConfig.Debug{
 		DisableDecoyTraffic: true,
@@ -698,7 +702,7 @@ func (k *Kimchi) GetClientConfig() (*cConfig.Config, string, *ecdh.PrivateKey, e
 	if k.voting {
 		p, err := sConfig.AuthorityPeersFromPeers(k.votingPeers())
 		if err != nil {
-			return nil, "", nil, err
+			return nil, err
 		}
 		cfg.VotingAuthority = &cConfig.VotingAuthority{
 			Peers: p,
@@ -709,12 +713,26 @@ func (k *Kimchi) GetClientConfig() (*cConfig.Config, string, *ecdh.PrivateKey, e
 			PublicKey: k.authIdentity.PublicKey(),
 		}
 	}
+	return cfg, nil
+}
 
+// registerClientAccount creates an account on a provider from the configuration
+func (k *Kimchi) registerClientAccount(cfg *cConfig.Config) (*cConfig.Config, *ecdh.PrivateKey, error) {
+	// select a username for the user
 	cfg.Account = &cConfig.Account{}
+	m := rand.NewMath()
+	cfg.Account.User = fmt.Sprintf("user-%d", m.Intn(255))
+
+	// configure logging for the user
+	cfg.Logging = &cConfig.Logging{
+		Disable: false,
+		File:    filepath.Join(k.baseDir, cfg.Account.User+".log"),
+		Level:   "DEBUG",
+	}
+
 	// find a provider
 	for _, nCfg := range k.nodeConfigs {
 		if nCfg.Server.IsProvider {
-			cfg.Account.User = username
 			cfg.Account.Provider = nCfg.Server.Identifier
 			cfg.Account.ProviderKeyPin = nCfg.Debug.IdentityKey.PublicKey()
 			cfg.Registration = &cConfig.Registration{} // not used
@@ -723,20 +741,20 @@ func (k *Kimchi) GetClientConfig() (*cConfig.Config, string, *ecdh.PrivateKey, e
 			// Generate keys for the account
 			linkKey, err := ecdh.NewKeypair(m)
 			if err != nil {
-				return nil, "", nil, err
+				return nil, nil, err
 			}
 			if err := cfg.FixupAndValidate(); err != nil {
-				return nil, "", nil, err
+				return nil, nil, err
 			}
 
 			// register the account on the provider
-			if err := k.thwackUser(nCfg, username, linkKey.PublicKey()); err != nil {
-				return nil, "", nil, err
+			if err := k.thwackUser(nCfg, cfg.Account.User, linkKey.PublicKey()); err != nil {
+				return nil, nil, err
 			}
-			return cfg, username, linkKey, nil
+			return cfg, linkKey, nil
 		}
 	}
-	return nil, "", nil, errors.New("no providers found")
+	return nil, nil, errors.New("no providers found")
 }
 
 func retry(p pki.Client, epoch uint64, retries int) (reply []byte, err error) {
