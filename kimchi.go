@@ -434,6 +434,25 @@ func (k *Kimchi) genNodeConfig(isProvider bool, isVoting bool) error {
 		cfg.Provider.UserRegistrationHTTPAddresses = []string{fmt.Sprintf("127.0.0.1:%v", k.lastPort)}
 		cfg.Provider.AdvertiseUserRegistrationHTTPAddresses = []string{fmt.Sprintf("http://127.0.0.1:%v", k.lastPort)}
 
+		// Enable panda service, if available.
+		panda_bin, err := exec.LookPath("panda_server")
+		if err == nil {
+			pandaCfg := new(sConfig.CBORPluginKaetzchen)
+			pandaCfg.Capability = "panda"
+			pandaCfg.Endpoint = "+panda"
+			pandaCfg.Command = panda_bin
+			pandaCfg.Config = map[string]interface{}{
+				"log_dir":           path.Join(k.baseDir, n),
+				"log_level":         "DEBUG",
+				"writeBackInterval": "1h",
+				"fileStore":         path.Join(k.baseDir, n, "panda.storage"),
+				"dwell_time":        "200h",
+			}
+			pandaCfg.MaxConcurrency = 1
+			pandaCfg.Disable = false
+			cfg.Provider.CBORPluginKaetzchen = append(cfg.Provider.CBORPluginKaetzchen, pandaCfg)
+		} // panda_server not available
+
 		// Enable memspool service, if available.
 		memspool_bin, err := exec.LookPath("memspool")
 		if err == nil {
