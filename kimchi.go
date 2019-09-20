@@ -39,6 +39,7 @@ import (
 	vClient "github.com/katzenpost/authority/voting/client"
 	vServer "github.com/katzenpost/authority/voting/server"
 	vConfig "github.com/katzenpost/authority/voting/server/config"
+	csConfig "github.com/katzenpost/catshadow/config"
 	cConfig "github.com/katzenpost/client/config"
 	"github.com/katzenpost/core/crypto/ecdh"
 	"github.com/katzenpost/core/crypto/eddsa"
@@ -688,6 +689,23 @@ func (k *Kimchi) GetClientConfig() (*cConfig.Config, string, *ecdh.PrivateKey, e
 	} else {
 		return nil, "", nil, err
 	}
+}
+
+// GetCatshadowConfig returns a catshadow client configuration
+func (k *Kimchi) GetCatshadowConfig() (*csConfig.Config, error) {
+	cCfg, err := k.GetClientNetconfig()
+	if err == nil {
+		cfg := &csConfig.Config{
+			Logging:            cCfg.Logging,
+			UpstreamProxy:      cCfg.UpstreamProxy,
+			Debug:              cCfg.Debug,
+			NonvotingAuthority: cCfg.NonvotingAuthority,
+			VotingAuthority:    cCfg.VotingAuthority,
+			Panda:              cCfg.Panda,
+		}
+		return cfg, err
+	}
+	return nil, err
 }
 
 // GetClientNetconfig returns a client.Config populated with PKI information
