@@ -85,6 +85,8 @@ github.com/katzenpost/server v0.0.8-0.20190910174632-99fb3d5cec86 h1:r/EAwAkWUuR
 github.com/katzenpost/server v0.0.8-0.20190910174632-99fb3d5cec86/go.mod h1:CXvtbnouH1jIPgAcZcpqDimvz7NPn1N3XW6Chkax3dc=
 github.com/katzenpost/server v0.0.8-0.20190916140956-ae145bb52900 h1:u3AbFKUt6VxKbL72Sr3h0ZPeKs3UE94M0uXHiKH7fqo=
 github.com/katzenpost/server v0.0.8-0.20190916140956-ae145bb52900/go.mod h1:CXvtbnouH1jIPgAcZcpqDimvz7NPn1N3XW6Chkax3dc=
+github.com/katzenpost/server v0.0.8-0.20190920140637-a8282b326bcb h1:p6qTN2gEpYpmWZ1YOtyv1QUZuQ7SWFHuHNCQwdnRyJg=
+github.com/katzenpost/server v0.0.8-0.20190920140637-a8282b326bcb/go.mod h1:CXvtbnouH1jIPgAcZcpqDimvz7NPn1N3XW6Chkax3dc=
 github.com/kr/pretty v0.1.0 h1:L/CwN0zerZDmRFUapSPitk6f+Q3+0za1rQkzVuMiMFI=
 github.com/kr/pretty v0.1.0/go.mod h1:dAy3ld7l9f0ibDNOQOHHMYYIIbhfbHSm3C4ZsoJORNo=
 github.com/kr/pty v1.1.1/go.mod h1:pFQYn66WHrOpPYNljwOMqo10TkYh1fy3cYio2l3bCsQ=
