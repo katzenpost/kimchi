@@ -148,6 +148,22 @@ func (k *Kimchi) Run() {
 
 		k.servers = append(k.servers, svr)
 		go k.LogTailer(v.Server.Identifier, filepath.Join(v.Server.DataDir, v.Logging.File))
+
+		// Add LogTailers for cbor plugins
+		if v.Server.IsProvider {
+			for _, plugin := range v.Provider.CBORPluginKaetzchen {
+				switch plugin.Capability {
+				case "spool", "panda":
+					if log_dir, ok := plugin.Config["log_dir"]; ok {
+						if matches, err := filepath.Glob(filepath.Join(log_dir.(string), plugin.Capability + ".*.log")); err == nil {
+							if len(matches) == 1 {
+								go k.LogTailer(v.Server.Identifier, matches[0])
+							}
+						}
+					}
+				}
+			}
+		}
 	}
 	k.runAuthority()
 }
