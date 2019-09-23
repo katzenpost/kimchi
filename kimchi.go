@@ -155,9 +155,9 @@ func (k *Kimchi) Run() {
 				switch plugin.Capability {
 				case "spool", "panda":
 					if log_dir, ok := plugin.Config["log_dir"]; ok {
-						if matches, err := filepath.Glob(filepath.Join(log_dir.(string), plugin.Capability + ".*.log")); err == nil {
+						if matches, err := filepath.Glob(filepath.Join(log_dir.(string), "*" + plugin.Capability + ".*.log")); err == nil {
 							if len(matches) == 1 {
-								go k.LogTailer(v.Server.Identifier, matches[0])
+								go k.LogTailer(v.Server.Identifier + " CBORPlugin:" + plugin.Capability, matches[0])
 							}
 						}
 					}
