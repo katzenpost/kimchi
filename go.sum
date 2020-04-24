@@ -6,8 +6,6 @@ git.schwanenlied.me/yawning/bloom.git v0.0.0-20181019144233-44d6c5c71ed1 h1:xhmJ
 git.schwanenlied.me/yawning/bloom.git v0.0.0-20181019144233-44d6c5c71ed1/go.mod h1:GZ84cORdAXx9o+gao9zDUCKlMCFcNVditnz/4FCpdnk=
 git.schwanenlied.me/yawning/bsaes.git v0.0.0-20190320102049-26d1add596b6 h1:zOrl5/RvK48MxMrif6Z+/OpuYyRnvB+ZTrQWEV9VYb0=
 git.schwanenlied.me/yawning/bsaes.git v0.0.0-20190320102049-26d1add596b6/go.mod h1:BWqTsj8PgcPriQJGl7el20J/7TuT1d/hSyFDXMEpoEo=
-git.schwanenlied.me/yawning/chacha20 v0.0.0-20170904085104-e3b1f968fc63/go.mod h1:T3xLJAhSIr+VG/0xD/5oFTBcfOExfdTlF0yB3EpXea4=
-git.schwanenlied.me/yawning/chacha20.git v0.0.0-20170904085104-e3b1f968fc63/go.mod h1:NYi4Ifd1g/YbhIDgDfw6t7QdsW4tofQWMX/+FiDtJWs=
 git.schwanenlied.me/yawning/newhope.git v0.0.0-20170622154529-9598792ba8f2/go.mod h1:weMqACFGzJs4Ni+K9shsRd02N4LkDrtGlkRxISK+II0=
 github.com/BurntSushi/toml v0.3.1 h1:WXkYYl6Yr3qBf1K79EBnL4mak0OimBfB0XUf9Vl28OQ=
 github.com/BurntSushi/toml v0.3.1/go.mod h1:xHWCNGjB5oqiDr8zfno3MHue2Ht5sIBksp03qcyfWMU=
@@ -39,8 +37,6 @@ github.com/katzenpost/authority v0.0.9-0.20190907184439-988189a151b2 h1:L3zmdBLO
 github.com/katzenpost/authority v0.0.9-0.20190907184439-988189a151b2/go.mod h1:Y2nAUrhg1rsYmVmwYctPDd8BlncA5uCXaxDc1E5Dd6c=
 github.com/katzenpost/authority v0.0.9-0.20190911162358-f26c00bab95d h1:upAmbhqFv7oWq9l+Ul60LrSXXcxEIm8IjqzUQR5USs8=
 github.com/katzenpost/authority v0.0.9-0.20190911162358-f26c00bab95d/go.mod h1:Y2nAUrhg1rsYmVmwYctPDd8BlncA5uCXaxDc1E5Dd6c=
-github.com/katzenpost/catshadow v0.0.2-0.20190912202718-332fce3c8c80 h1:0XttQsfbuObxL1T6Htec4qHdzIRmzwuMZt2ZAw+hfk8=
-github.com/katzenpost/catshadow v0.0.2-0.20190912202718-332fce3c8c80/go.mod h1:zW97Nw5+38rL6/K3WaP7VU/wfMsFzOpfZwfGZhZrRto=
 github.com/katzenpost/chacha20 v0.0.0-20190907175341-fad9676fa4d8 h1:Qc8w/Lni2Ak4/MY02/UgH+Oeg1SfyDNNs/VOXC28ciM=
 github.com/katzenpost/chacha20 v0.0.0-20190907175341-fad9676fa4d8/go.mod h1:d9kxwmGOcutgP6bQwr2xaLInaW5yJsxsoPRyUIG0J/E=
 github.com/katzenpost/chacha20 v0.0.0-20190907175840-5d3e00398cad h1:GUBy3gwZnLGqROrkno16NWDky6EZnWPzMkCeBTzZXn0=
