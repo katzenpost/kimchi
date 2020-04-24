@@ -75,8 +75,6 @@ github.com/katzenpost/noise v0.0.0-20190323135632-a6bec72d870a/go.mod h1:1ekEhTk
 github.com/katzenpost/noise v0.0.0-20190907181756-73de63f19ada/go.mod h1:TqIOjVOESMlMl9Z+XElrJlY9gtBthOFpolLV3tA0vSg=
 github.com/katzenpost/noise v0.0.0-20190907211420-4c2fa3a5d7a1 h1:bD6fNKhG5mnTWpxscA9mrCV94ZsqYj4VUEwrjingfbM=
 github.com/katzenpost/noise v0.0.0-20190907211420-4c2fa3a5d7a1/go.mod h1:TqIOjVOESMlMl9Z+XElrJlY9gtBthOFpolLV3tA0vSg=
-github.com/katzenpost/panda v0.0.4-0.20190801155026-ac87cceaf056 h1:JGTovSTaFmi8z1Agto2c1gmSR22ERPPBkccZQnAOL4k=
-github.com/katzenpost/panda v0.0.4-0.20190801155026-ac87cceaf056/go.mod h1:ZWlRxTlGXjFdVnFNP1EFuOyl6QwfQQDQWIrnZnhnl1A=
 github.com/katzenpost/registration_client v0.0.1 h1:ZvlEQ0rfVEGEV67x7KVxMi0veiLn2QyM1bxfWb8u7Q8=
 github.com/katzenpost/registration_client v0.0.1/go.mod h1:WaK2S0QiXYY3z/ZWVsFeX03qdrvde81IVjQqp8XQUiE=
 github.com/katzenpost/server v0.0.7/go.mod h1:sOea2sG8ggASFYNTXhjEGmdanyXYsJz0wE2BTA/mCo0=
